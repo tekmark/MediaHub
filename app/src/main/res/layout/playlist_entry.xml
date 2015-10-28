@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/playlist_entry_background">
+    <ImageButton
+        android:id="@+id/playlist_entry_button_more"
+        android:contentDescription="More button shows more options"
+        android:background="@color/transparent"
+        android:src="@drawable/more_32"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"/>
+    <RelativeLayout
+        android:id="@+id/playlist_entry_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@id/playlist_entry_button_more"
+        android:layout_toLeftOf="@id/playlist_entry_button_more"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignBottom="@id/playlist_entry_button_more">
+        <TextView
+            android:id="@+id/playlist_entry_label_position"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_width="32dp"
+            android:layout_height="fill_parent" />
+        <TextView
+            android:id="@+id/playlist_entry_label_duration"
+            android:text="0:00"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"/>
+        <TextView
+            android:id="@+id/playlist_entry_label_title"
+            android:text="Unknown Music"
+            android:singleLine="true"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/playlist_entry_label_position"
+            android:layout_toRightOf="@id/playlist_entry_label_position"
+            android:layout_toStartOf="@id/playlist_entry_label_duration"
+            android:layout_toLeftOf="@id/playlist_entry_label_duration"
+            android:layout_alignParentTop="true"/>
+        <TextView
+            android:id="@+id/playlist_entry_label_artist"
+            android:text="Unknown Artist"
+            android:textSize="12sp"
+            android:singleLine="true"
+            android:layout_below="@id/playlist_entry_label_title"
+            android:layout_toEndOf="@id/playlist_entry_label_position"
+            android:layout_toRightOf="@id/playlist_entry_label_position"
+            android:layout_toStartOf="@id/playlist_entry_label_duration"
+            android:layout_toLeftOf="@id/playlist_entry_label_position"
+            android:layout_alignParentBottom="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+    <!--
+    <include layout="@layout/playlist_item_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/playlist_item_info"/>
+    -->
+</RelativeLayout>
