@@ -95,6 +95,28 @@ public class PlaylistFragment extends Fragment {
         return mPlaylist;
     }
 
+    private int mCurrentHighlightedPosition = -1;
+    public void setPositionHighlighted(int position) {
+        if (position == mCurrentHighlightedPosition) {
+            Log.d(TAG, "Position : " + position + " is already highlighted");
+        } else {
+            //reset current highlighted position
+            PlaylistItemHolder holder = (PlaylistItemHolder)
+                    mPlaylistRecyclerView.findViewHolderForAdapterPosition(mCurrentHighlightedPosition);
+            if (holder != null) {
+                Log.d(TAG, "remove highlight at Position: " + mCurrentHighlightedPosition);
+                holder.resetHighlight();
+            }
+            holder = (PlaylistItemHolder) mPlaylistRecyclerView.findViewHolderForAdapterPosition(
+                    position);
+            if (holder != null) {
+                Log.d(TAG, "highlight position: " + position);
+                holder.setHighlight();
+                mCurrentHighlightedPosition = position;
+            }
+        }
+    }
+
     private void updateUI() {
         Log.d(TAG, "Update UI");
         mPlaylist = MediaManager.getPlaylistMusicFiles(getContext(), mPlaylistId);
@@ -131,8 +153,8 @@ public class PlaylistFragment extends Fragment {
                 public void onClick(View v) {
                     //mListener.selectPlaybackServicePosition(1);
                     int position = Integer.parseInt(mPosition.getText().toString());
-                    mListener.itemPositionOnClick(position);
                     Log.d(TAG, "itemPositionOnClick -> Position : " + position + " Title : " + mMusicFile.getTitle());
+                    mListener.itemPositionOnClick(position);
 //                    Intent intent = new Intent(getContext(), PlayingActivity.class);
 //                    startActivity(intent);
                 }

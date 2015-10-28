@@ -139,7 +139,7 @@ public class MediaplayerControllerFragment extends Fragment {
     }
 
 //    bind controller's layout to service, and set listeners
-//    public boolean bindToMusicService(MusicPlaybackService musicService) {
+//    public boolean bindService(MusicPlaybackService musicService) {
 //        if (musicService == null) {
 //            mService = null;
 //            bound = false;

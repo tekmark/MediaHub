@@ -181,5 +181,4 @@ public class PlaylistsTabFragment extends Fragment {
             return mPlaylists.size();
         }
     }
-
 }

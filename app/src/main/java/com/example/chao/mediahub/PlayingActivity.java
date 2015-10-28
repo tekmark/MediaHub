@@ -210,7 +210,7 @@ public class PlayingActivity extends AppCompatActivity {
             mPlaybackService = binder.getService();
             mBound = true;
             Log.d(TAG, "MusicPlaybackService connected");
-            //controller.bindToMusicService(mMusicService);
+            //controller.bindService(mMusicService);
             //controller.sync();
         }
 

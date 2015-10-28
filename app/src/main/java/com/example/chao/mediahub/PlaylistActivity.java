@@ -7,9 +7,11 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 
 import java.util.List;
 
@@ -21,6 +23,8 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
 
     private int mPlaylistId;
     private PlaylistFragment mPlaylistFragment;
+
+    private MediaPlayerController mController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,10 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         //update toolbar title to playlist name
         toolbar.setTitle(title);
         setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_PLAYLIST_ID, Playlist.INVALID_ID);
         if (mPlaylistId == Playlist.INVALID_ID) {
@@ -43,14 +51,14 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             Log.d(TAG, "Playlist Id : " + mPlaylistId);
         }
 
+        mController = MediaPlayerController.newInstance(this);
+
         FragmentManager fm = getSupportFragmentManager();
         mPlaylistFragment = (PlaylistFragment) fm.findFragmentById(R.id.fragment_playlist);
         if (mPlaylistFragment == null) {
             mPlaylistFragment = PlaylistFragment.newInstance(mPlaylistId);
             fm.beginTransaction().add(R.id.fragment_playlist, mPlaylistFragment).commit();
         }
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -79,6 +87,12 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         super.onStop();
     }
 
+    public void showController(View view) {
+        Intent intent = new Intent(this, PlayingActivity.class);
+        startActivity(intent);
+        Log.d(TAG, "Show Playing");
+        overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_no_anim);
+    }
 
     //define local service connection for bound service.
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -86,21 +100,14 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             //cast the IBinder and get LocalService instance
-            //MusicService.MusicServiceBinder binder = (MusicService.MusicServiceBinder) service;
             MusicPlaybackService.ServiceBinder binder = (MusicPlaybackService.ServiceBinder) service;
             mPlaybackService = binder.getService();
-//            mMusicService.loadCurrPlaylist(playlist);
             Log.d(TAG, "MusicPlaybackService connected");
+            //sync background music playback service's playlist
             syncPlaybackServicePlayingList();
 
-//            mPlaybackService.loadPlaylist(mPlaylistId);
-
             //bind controller to service
-//            mController.bindToMusicService(mMusicService);
-            //mController.sync();
-
-            //place items on screen;
-//            createItemsViews(mMusicService.getMusicFiles());
+            mController.bindService(mPlaybackService);
             mBound = true;
         }
 
@@ -114,7 +121,14 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     @Override
     public void itemPositionOnClick(int position) {
         if(mBound && mPlaybackService != null) {
-            Log.d(TAG, "position " +position);
+            Log.d(TAG, "position " + position);
+            if (mPlaybackService.getCurrentPosition() == position && mPlaybackService.isPlaying()) {
+                mPlaybackService.pause();
+            } else {
+                mPlaybackService.playPlaylistFrom(position);
+                //mController.sync();
+            }
+            mPlaylistFragment.setPositionHighlighted(position);
         } else {
             Log.w(TAG, "PlaybackService is not bound");
         }
@@ -125,5 +139,4 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         List<MusicFile> list = mPlaylistFragment.getPlaylist();
         mPlaybackService.updatePlayingList(list);
     }
-
 }
