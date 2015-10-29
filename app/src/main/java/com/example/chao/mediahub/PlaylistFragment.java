@@ -2,6 +2,7 @@ package com.example.chao.mediahub;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -165,7 +166,7 @@ public class PlaylistFragment extends Fragment {
             mMusicFile = file;
             mTitle.setText(mMusicFile.getTitle());
             mArtist.setText(mMusicFile.getArtist());
-            mDuration.setText(mMusicFile.getDuration());
+            mDuration.setText(Utilities.millSecondsToTime(mMusicFile.getDuration()));
             mPosition.setText(Integer.toString(position));
         }
 

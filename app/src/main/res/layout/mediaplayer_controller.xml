@@ -3,7 +3,7 @@
     android:layout_width="match_parent" android:layout_height="wrap_content">
     <TextView
         android:id="@+id/mediaplayer_controller_label_title"
-        android:text="Unknow Music"
+        android:text="@string/unknown_music"
         android:textColor="@color/black"
         android:textSize="30sp"
         android:gravity="center"
@@ -16,7 +16,7 @@
         android:layout_alignParentRight="true"/>
     <TextView
         android:id="@+id/mediaplayer_controller_label_artist"
-        android:text="Unknow Artist"
+        android:text="@string/unknown_artist"
         android:textColor="@color/black"
         android:gravity="center"
         android:layout_width="wrap_content"
@@ -54,6 +54,7 @@
         android:id="@+id/mediaplayer_controller_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:progress="0"
         android:layout_below="@id/mediaplayer_controller_label_total_time"/>
     <LinearLayout
         android:layout_width="match_parent"

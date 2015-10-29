@@ -216,7 +216,7 @@ public class MediaManager {
 
                     musicFile.setAudioId(Integer.parseInt(audioId));
                     musicFile.setId(Integer.parseInt(id));
-                    musicFile.setDuration(duration);
+                    musicFile.setDuration(Integer.parseInt(duration));
                     musicFile.setAlbum(album);
                     musicFile.setArtist(artist);
                     musicFile.setTitle(title);

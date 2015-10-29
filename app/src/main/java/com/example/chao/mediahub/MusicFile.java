@@ -7,7 +7,7 @@ public class MusicFile {
     final static public String UNKNOWN_MUSIC="Unknown Music";
     final static public String UNKNOWN_ARTIST="Unknown Artist";
     final static public String UNKNOWN_ALBUM="Unknown Album";
-    final static public String UNKNOWN_DURATION = "0:00";
+    final static public int UNKNOWN_DURATION = 0;
     final static public String INVALID_PATH = "";
     final static public int INVALID_ID = -1;
 
@@ -24,7 +24,7 @@ public class MusicFile {
     private String title;
     private String artist;
     private String album;
-    private String duration;
+    private int duration;
     private String path;
 
     public MusicFile() {
@@ -42,7 +42,7 @@ public class MusicFile {
         artist = musicFile.artist;
         album = musicFile.album;
         path = musicFile.path;
-        duration = musicFile.path;
+        duration = musicFile.duration;
         id = musicFile.id;
         audioId = musicFile.audioId;
     }
@@ -62,7 +62,7 @@ public class MusicFile {
             case PATH:
                 setPath(s);
             case DURATION:
-                setDuration(s);
+                setDuration(Integer.parseInt(s));
         }
     }
 
@@ -81,7 +81,7 @@ public class MusicFile {
             case PATH:
                 return getPath();
             case DURATION:
-                return getDuration();
+                return Integer.toString(getDuration());
             default:
                 return "";
         }
@@ -103,7 +103,7 @@ public class MusicFile {
         return artist;
     }
 
-    public String getDuration() {
+    public int getDuration() {
         return duration;
     }
 
@@ -127,7 +127,7 @@ public class MusicFile {
         this.audioId = audioId;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 

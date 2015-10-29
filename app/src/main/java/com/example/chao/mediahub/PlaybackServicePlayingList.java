@@ -52,9 +52,9 @@ public class PlaybackServicePlayingList {
         playlistName = newPlaylistName;
     }
 
-    public void addMusicFile(MusicFile musicFile) {
-        musicFiles.add(musicFile);
-    }
+//    public void addMusicFile(MusicFile musicFile) {
+//        musicFiles.add(musicFile);
+//    }
 
     public MusicFile getMusicFile(int index) {
         return musicFiles.get(index);

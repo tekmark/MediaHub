@@ -25,27 +25,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp">
-        <!--<include-->
-            <!--android:id="@+id/mediaplayer_controller"-->
-            <!--app:layout_behavior=""-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_width="match_parent"-->
-            <!--layout="@layout/mediaplayer_controller"/>-->
-        <FrameLayout
-            android:id="@+id/mediaplayer_controller_container"
-            android:layout_width="wrap_content"
+        <include
+            android:id="@+id/mediaplayer_controller"
+            android:layout_alignParentBottom="true"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"/>
-        <!--<include-->
-            <!--android:id="@+id/musicplayer_controller"-->
-            <!--layout="@layout/fragment_mediaplayer_controller"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"/>-->
+            android:layout_width="match_parent"
+            layout="@layout/mediaplayer_controller"/>
         <android.support.v4.view.ViewPager android:id="@+id/container"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_above="@id/mediaplayer_controller_container"
+            android:layout_above="@id/mediaplayer_controller"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

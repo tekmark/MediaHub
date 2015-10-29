@@ -32,7 +32,6 @@ public class MediaplayerControllerFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-
     private OnFragmentInteractionListener mListener;
 
     private ImageButton mPlayPause;
@@ -77,8 +76,8 @@ public class MediaplayerControllerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mService = null;
-        bound = false;
+//        mService = null;
+//        bound = false;
 
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
@@ -139,25 +138,77 @@ public class MediaplayerControllerFragment extends Fragment {
     }
 
 //    bind controller's layout to service, and set listeners
-//    public boolean bindService(MusicPlaybackService musicService) {
-//        if (musicService == null) {
-//            mService = null;
-//            bound = false;
-//            Log.w(TAG, "Try to bind to a invalid music service");
-//            return false;
-//        } else {
-//            mService = musicService;
-//            bound = true;
-//            setListeners();
-//            Log.d(TAG, "Music service is bound");
-//            return true;
+    public boolean bindService(MusicPlaybackService musicService) {
+        if (musicService == null) {
+            mService = null;
+            bound = false;
+            Log.w(TAG, "Try to bind to a invalid music service");
+            return false;
+        } else {
+            mService = musicService;
+            bound = true;
+            setListeners();
+            Log.d(TAG, "Music service is bound");
+            return true;
+        }
+    }
+
+    public void setTitle(String title) {
+        if (mTitle != null) {
+            mTitle.setText(title);
+        }
+    }
+
+    public void setArtist(String artist) {
+        if (mArtist != null) {
+            mArtist.setText(artist);
+        }
+    }
+
+    public void setmTotalDuration(String duration) {
+        if (mTotalDuration != null) {
+            mTotalDuration.setText(duration);
+        }
+    }
+
+//    public void setPlayPauseButton(boolean playing) {
+//        if (mPlayPause != null) {
+//            mPlayPause.setSelected(playing);
 //        }
 //    }
+
+
+    public void sync() {
+        if (bound && mService != null) {
+            MusicFile file = mService.getCurrentMusicFile();
+            if (file != null) {
+                //sync title and artist
+                setTitle(file.getTitle());
+                setArtist(file.getArtist());
+                //sync progress bar
+                if (mTotalDuration != null && mCurrDuration != null && mProgressBar != null) {
+                    int totalDuration = (int) mService.getTotalDuration();
+                    mTotalDuration.setText(Utilities.millSecondsToTime(totalDuration));
+                    mProgressBar.setMax(totalDuration);
+                    int currentPosition = (int) mService.getCurrentDuration();
+                    mCurrDuration.setText(Utilities.millSecondsToTime(currentPosition));
+                    mProgressBar.setProgress(currentPosition);
+                }
+                //sync play_pause button
+                if (mService.isPlaying()) {
+                    if (mPlayPause != null) {
+                        mPlayPause.setSelected(true);
+                    }
+                }
+            }
+        }
+    }
+
 
     public boolean isBound() {
         return bound;
     }
-
+//
     private void bindLayout(View rootView) {
         mPlayPause = (ImageButton) rootView.findViewById(R.id.mediaplayer_controller_button_play_pause);
         if (mPlayPause != null) {
@@ -221,7 +272,27 @@ public class MediaplayerControllerFragment extends Fragment {
     };
 
     private void setPlayPauseButtonListner() {
-
+        mPlayPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "PlayPause Button is clicked");
+                if (mPlayPause.isSelected() && mService.isPlaying()) { //if image is pause (playing)
+                    mPlayPause.setSelected(false);      //change image from pause to play
+                    mService.pause();                   //pause
+                    Log.d(TAG, "Button image: Pause(Ready_To_Pause) -> Play(Ready_to_Play)");
+                } else if (!mPlayPause.isSelected() && !mService.isPlaying()) { //if paused
+                    //NOTE: isPlaying() == false doesn't mean that MusicService is paused. MediaPlayer
+                    //maybe not prepared. One situation is that next() is called, since currently is
+                    //not playing, but asynPrepare() is not called.
+                    mPlayPause.setSelected(true);
+                    mService.play();
+                    Log.d(TAG, "Button image: Play(Ready_to_Play) -> Pause(Ready_to_Pause)");
+                } else {    //handle error here
+                    mPlayPause.setSelected(mService.isPlaying());
+                    Log.e(TAG, "PlayPause ButtonImageERROR, image has been hanged");
+                }
+            }
+        });
     }
 
     private void setEndButtonListener() {

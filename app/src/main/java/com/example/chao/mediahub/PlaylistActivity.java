@@ -24,6 +24,9 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     private int mPlaylistId;
     private PlaylistFragment mPlaylistFragment;
 
+    private boolean isInfoBarVisible = false;
+    //private List<MusicFile> mPlaylist;
+
     private MediaPlayerController mController;
 
     @Override
@@ -44,6 +47,8 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        mController = MediaPlayerController.newInstance(this);
+
         mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_PLAYLIST_ID, Playlist.INVALID_ID);
         if (mPlaylistId == Playlist.INVALID_ID) {
             Log.e(TAG, "Invalid Playlist Id");
@@ -51,7 +56,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             Log.d(TAG, "Playlist Id : " + mPlaylistId);
         }
 
-        mController = MediaPlayerController.newInstance(this);
+        //mController = MediaPlayerController.newInstance(this);
 
         FragmentManager fm = getSupportFragmentManager();
         mPlaylistFragment = (PlaylistFragment) fm.findFragmentById(R.id.fragment_playlist);
@@ -59,6 +64,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             mPlaylistFragment = PlaylistFragment.newInstance(mPlaylistId);
             fm.beginTransaction().add(R.id.fragment_playlist, mPlaylistFragment).commit();
         }
+        showInfoBar();
     }
 
     @Override
@@ -70,9 +76,8 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     @Override
     public void onStart() {
         super.onStart();
-        Intent playIntent = new Intent(this, MusicPlaybackService.class);
-        startService(playIntent);
-        bindService(playIntent, mConnection, Context.BIND_AUTO_CREATE);
+        Intent intent = new Intent(this, MusicPlaybackService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -82,8 +87,6 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             mBound = false;
             Log.d(TAG, "Service disconnected");
         }
-        //clear item views;
-        //clearItemViews();
         super.onStop();
     }
 
@@ -108,8 +111,9 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
 
             //bind controller to service
             mController.bindService(mPlaybackService);
+
             mBound = true;
-        }
+    }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
@@ -138,5 +142,20 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         //sync playlist
         List<MusicFile> list = mPlaylistFragment.getPlaylist();
         mPlaybackService.updatePlayingList(list);
+    }
+
+    private void hideInfoBar() {
+        if (isInfoBarVisible) {
+            View view = findViewById(R.id.playlist_info_bar_bottom);
+            view.setVisibility(View.INVISIBLE);
+            isInfoBarVisible = false;
+        }
+    }
+    private void showInfoBar() {
+        if (!isInfoBarVisible) {
+            View view = findViewById(R.id.playlist_info_bar_bottom);
+            view.setVisibility(View.VISIBLE);
+            isInfoBarVisible = true;
+        }
     }
 }

@@ -44,7 +44,10 @@ public class PlayingActivity extends AppCompatActivity {
     private ViewPager mViewPager;
 
     private MusicPlaybackService mPlaybackService;
+    private MediaPlayerController mController;
     private boolean mBound;
+
+//    private MediaplayerControllerFragment mControllerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,15 +72,9 @@ public class PlayingActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        FragmentManager fm = getSupportFragmentManager();
+        mController = MediaPlayerController.newInstance(this);
+        mController.enableSeek(true);
 
-
-        Fragment fragment = fm.findFragmentById(R.id.mediaplayer_controller_container);
-        if (fragment == null) {
-            Log.d(TAG, "fragment == null");
-            fragment = MediaplayerControllerFragment.newInstance("", "");
-            fm.beginTransaction().add(R.id.mediaplayer_controller_container, fragment).commit();
-        }
     }
 
     @Override
@@ -86,11 +83,13 @@ public class PlayingActivity extends AppCompatActivity {
         Intent playInent = new Intent(this, MusicPlaybackService.class);
         bindService(playInent, mConnection, Context.BIND_AUTO_CREATE);
     }
-
+    
     @Override
-    public void onStop() {
-        if(mBound) {
+    protected void onStop() {
+        if (mBound) {
             unbindService(mConnection);
+            mBound = false;
+            Log.d(TAG, "Service disconnected");
         }
         super.onStop();
     }
@@ -210,8 +209,8 @@ public class PlayingActivity extends AppCompatActivity {
             mPlaybackService = binder.getService();
             mBound = true;
             Log.d(TAG, "MusicPlaybackService connected");
-            //controller.bindService(mMusicService);
-            //controller.sync();
+            mController.bindService(mPlaybackService);
+            mController.sync();
         }
 
         @Override

@@ -13,9 +13,9 @@ import android.widget.TextView;
  * Created by chaohan on 10/28/15.
  */
 public class MediaPlayerController {
-    final int PLAY_PREVIOUS_THRESHOLD_SEC = 10;
-    final int DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC = 200;
-    final int DEFAULT_PROGRESS_BAR_REFRESH_TIMES = 500;
+    final static public int PLAY_PREVIOUS_THRESHOLD_SEC = 10;
+    final static public int DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC = 200;
+    final static public int DEFAULT_PROGRESS_BAR_REFRESH_TIMES = 500;
 
 
     final static private String TAG = "MediaPlayerController";
@@ -34,8 +34,6 @@ public class MediaPlayerController {
 
     private TextView mTitle;
     private TextView mArtist;
-    //private int currSongIndex;
-    //private int defaultSongIndex;
 
     //private boolean isShuffle = false;
     //private boolean isRepeat = false;
@@ -76,36 +74,6 @@ public class MediaPlayerController {
         return bound;
     }
 
-    public void sync() {
-        Log.d(TAG, "sync() is called");
-        if (!bound) {
-            Log.w(TAG, "Sync failed. Cannot sync unbound controller");
-            return;
-        }
-        if (mPlayPause != null) {
-            if (mService.isPlaying()) {
-                mPlayPause.setSelected(true);
-            } else {
-                mPlayPause.setSelected(false);
-            }
-        }
-        if (mProgressBar != null) {
-            refreshProgressBar();
-        }
-        if (mArtist != null) {
-            String artist = mService.getCurrentArtist();
-            mArtist.setText(artist);
-        }
-        if (mTitle != null) {
-            String title = mService.getCurrentTitle();
-            mTitle.setText(title);
-        }
-        if (mTotalDuration != null) {
-            long total = mService.getDuration();
-            mTotalDuration.setText(Utilities.millSecondsToTime(total));
-        }
-    }
-
     public void enableProgressBar(boolean enable) {
         if (mProgressBar != null) {
             mProgressBar.setEnabled(enable);
@@ -142,6 +110,10 @@ public class MediaPlayerController {
         } else {
             Log.w(TAG, "Progress bar is not bound or missing in layout");
         }
+    }
+
+    public void setInfo(String title, String artist, String duration){
+
     }
 
     private void bindLayout(Activity activity) {
@@ -221,6 +193,7 @@ public class MediaPlayerController {
                     //not playing, but asynPrepare() is not called.
                     mPlayPause.setSelected(true);
                     mService.play();
+                    //mService.resume();
                     Log.d(TAG, "Button image: Play(Ready_to_Play) -> Pause(Ready_to_Pause)");
                 } else {    //handle error here
                     mPlayPause.setSelected(mService.isPlaying());
@@ -236,6 +209,7 @@ public class MediaPlayerController {
             public void onClick(View v) {
                 Log.d(TAG, "End Button is clicked");
                 mService.next();
+                sync();
             }
         });
     }
@@ -247,20 +221,12 @@ public class MediaPlayerController {
                 Log.d(TAG, "SkipToStart Button is clicked");
                 int played_sec = mService.getCurrentPosition() / 1000;
                 if (played_sec < PLAY_PREVIOUS_THRESHOLD_SEC) {
-//                    mMediaPlayer.reset();
-//                    if (preparePrevSong()) {
-//                        Log.d("MediaPlayer", "move to previous song in Playlist");
-//                        if (mPlayPause.isSelected()) {
-//                            play();
-//                        }
-//                    } else {
-//                        Log.d("MediaPlayer", "Fail to find previous song in Playlist");
-//                    }
                     mService.previous();
                 } else {
                     Log.d(TAG, "Played Sec : " + played_sec + " Skip to Start of Current");
                     mService.skipToStart();
                 }
+                sync();
             }
         });
     }
@@ -321,54 +287,68 @@ public class MediaPlayerController {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mHandler.removeCallbacks(mUpdateTimeTask);
-                long totalDuration = mService.getDuration();
-                //int currPosition = (int) (seekBar.getProgress() * totalDuration / 100);
+                //long totalDuration = mService.getTotalDuration();
                 mService.seekTo(seekBar.getProgress());
-                //play();
-                refreshProgressBar();
+                updateProgressBar();
             }
         });
     }
 
-    public void refreshProgressBar() {
-        //TODO: update getProgress() in MusicService
-        long total = mService.getDuration();
-        mProgressBar.setMax((int) total);
-
-        //mTotalDuration.setText(MediaPlayerUtils.millSecondsToTime(total));
-        if (mTotalDuration != null) {
-            mTotalDuration.setText(Utilities.millSecondsToTime(total));
+    private void setTitle(String title) {
+        if (mTitle != null) {
+            mTitle.setText(title);
         }
-        mHandler.postDelayed(mUpdateTimeTask, DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC);
     }
 
-    public void stopRefreshProgressBar() {
+    private void setArtist(String artist) {
+        if (mArtist != null) {
+            mArtist.setText(artist);
+        }
+    }
+
+    public void sync() {
+        Log.d(TAG, "sync() is called");
+        if (bound && mService != null) {
+            MusicFile file = mService.getCurrentMusicFile();
+            if (file != null) {
+                //sync title and artist
+                setTitle(file.getTitle());
+                setArtist(file.getArtist());
+                //sync play_pause button
+                if (mPlayPause != null) {
+                        mPlayPause.setSelected(mService.isPlaying());
+                }
+                //sync progress bar
+                if (mTotalDuration != null && mCurrDuration != null && mProgressBar != null) {
+                    updateProgressBar();
+                }
+            }
+        } else {
+             Log.w(TAG, "Sync failed. Cannot sync unbound controller");
+        }
+    }
+
+    public void updateProgressBar() {
+        long total = mService.getTotalDuration();
+        mProgressBar.setMax((int) total);
+        mTotalDuration.setText(Utilities.millSecondsToTime(total));
         mHandler.removeCallbacks(mUpdateTimeTask);
+        mHandler.postDelayed(mUpdateTimeTask, DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC);
     }
 
     private Runnable mUpdateTimeTask = new Runnable() {
         @Override
         public void run() {
-            if (mService.isPlaying()) {
-                long totalDuration = mService.getDuration();
-                long currDuration = mService.getCurrentDuration();
+            long totalDuration = mService.getTotalDuration();
+            long currDuration = mService.getCurrentDuration();
+            mCurrDuration.setText(Utilities.millSecondsToTime(currDuration));
+            mProgressBar.setProgress((int) currDuration);
 
-                mCurrDuration.setText(Utilities.millSecondsToTime(currDuration));
-                mTotalDuration.setText(Utilities.millSecondsToTime(totalDuration));
-
-                mProgressBar.setProgress((int) currDuration);
-
-                //frequency of refreshing progress bar depends on total duration of the audio.
-                //therefore, if audio is extremely long, refreshing rate will be low.
-                int updateFreq = Math.max(DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC,
+            //frequency of refreshing progress bar depends on total duration of the audio.
+            //therefore, if audio is extremely long, refreshing rate will be low.
+            int updateFreq = Math.max(DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC,
                         (int) totalDuration / DEFAULT_PROGRESS_BAR_REFRESH_TIMES);
-                mHandler.postDelayed(this, updateFreq);
-            } else {
-                if (mPlayPause != null && !mPlayPause.isSelected()) {
-                    mPlayPause.setSelected(false);
-                }
-                mHandler.postDelayed(this, DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC);
-            }
+            mHandler.postDelayed(this, updateFreq);
         }
     };
 }
