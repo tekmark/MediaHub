@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.chao.mediahub" >
+    package="com.example.chao.mediahub">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -10,11 +11,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,7 +26,7 @@
             android:name=".PlaylistActivity"
             android:label="@string/title_activity_playlist"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.chao.mediahub.MainActivity" />
@@ -34,7 +35,7 @@
             android:name=".PlayingActivity"
             android:label="@string/title_activity_playing"
             android:parentActivityName=".PlaylistActivity"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.chao.mediahub.PlaylistActivity" />
@@ -43,18 +44,29 @@
         <service
             android:name=".MusicPlaybackService"
             android:enabled="true"
-            android:exported="true" >
-        </service>
+            android:exported="true" />
 
         <activity
             android:name=".ClockActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_clock"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/FullscreenTheme" >
+            android:theme="@style/FullscreenTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.chao.mediahub.MainActivity" />
+        </activity>
+        <activity
+            android:name=".CreatePlaylistActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".PlaylistAddMusicActivity"
+            android:label="@string/title_activity_playlist_add_music"
+            android:parentActivityName=".CreatePlaylistActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.chao.mediahub.CreatePlaylistActivity" />
         </activity>
     </application>
 

@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/list"
-    android:name="com.example.chao.mediahub.AddToPlaylistFragment"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    app:layoutManager="LinearLayoutManager"
-    tools:context="com.example.chao.mediahub.AddToPlaylistFragment"
-    tools:listitem="@layout/fragment_addtoplaylist" />
+    android:layout_height="300sp"
+    android:orientation="vertical"
+    android:layout_gravity="bottom"
+    android:background="@color/light_gray_header_color">
+    <Button android:id="@+id/button_new_playlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="New Playlist"/>
+    <android.support.v7.widget.RecyclerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/list"
+        android:name="com.example.chao.mediahub.AddToPlaylistFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/button_new_playlist"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context="com.example.chao.mediahub.AddToPlaylistFragment"
+        tools:listitem="@layout/fragment_addtoplaylist"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_alignParentBottom="true"/>
+</RelativeLayout>

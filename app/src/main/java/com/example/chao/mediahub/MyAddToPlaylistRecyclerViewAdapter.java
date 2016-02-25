@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.chao.mediahub.ItemFragment.OnListFragmentInteractionListener;
+import com.example.chao.mediahub.AddToPlaylistFragment.OnListFragmentInteractionListener;
 import com.example.chao.mediahub.dummy.DummyContent.DummyItem;
 
 import java.util.List;
@@ -16,8 +16,9 @@ import java.util.List;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyAddToPlaylistRecyclerViewAdapter extends RecyclerView.Adapter<MyAddToPlaylistRecyclerViewAdapter.ViewHolder> {
 
+public class MyAddToPlaylistRecyclerViewAdapter extends
+        RecyclerView.Adapter<MyAddToPlaylistRecyclerViewAdapter.ViewHolder> {
     private final List<DummyItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
@@ -29,7 +30,7 @@ public class MyAddToPlaylistRecyclerViewAdapter extends RecyclerView.Adapter<MyA
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_item, parent, false);
+                .inflate(R.layout.fragment_addtoplaylist, parent, false);
         return new ViewHolder(view);
     }
 

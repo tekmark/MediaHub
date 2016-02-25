@@ -27,7 +27,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     private boolean isInfoBarVisible = false;
     //private List<MusicFile> mPlaylist;
 
-    private MediaPlayerController mController;
+    private MediaplayerController mController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +47,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mController = MediaPlayerController.newInstance(this);
+        mController = MediaplayerController.newInstance(this);
 
         mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_PLAYLIST_ID, Playlist.INVALID_ID);
         if (mPlaylistId == Playlist.INVALID_ID) {

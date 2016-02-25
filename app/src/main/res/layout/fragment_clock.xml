@@ -27,7 +27,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_width="">
+            android:layout_width="wrap_content">
             <TextView
                 android:id="@+id/label_am"
                 android:text="@string/am"

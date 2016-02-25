@@ -1,14 +1,17 @@
 package com.example.chao.mediahub;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -28,6 +31,8 @@ public class LibraryTabFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    final static private String TAG = "LibraryTabFragment";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -127,44 +132,58 @@ public class LibraryTabFragment extends Fragment {
     }
 
     private void updateUI() {
-        List<String> list = new ArrayList<String>();
-        list.add("item1");
-        list.add("item2");
-        list.add("item3");
-        list.add("item4");
-
+//        List<String> list = new ArrayList<String>();
+//        list.add("item1");
+//        list.add("item2");
+//        list.add("item3");
+//        list.add("item4");
+//
+//        mAdapter = new LibraryAdapter(list);
+        List<MusicFile> list = MediaManager.getAllMusicFiles(this.getContext());
         mAdapter = new LibraryAdapter(list);
         mLibraryRecyclerView.setAdapter(mAdapter);
     }
 
     private class LibraryItemHolder extends RecyclerView.ViewHolder {
         public TextView mTitle;
+        public TextView mArtistAlbum;
+        public ImageButton mOptions;
         public LibraryItemHolder(View itemView) {
             super(itemView);
-            mTitle = (TextView)itemView;
+            mTitle = (TextView)itemView.findViewById(R.id.library_song_entry_label_title);
+            mArtistAlbum = (TextView) itemView.findViewById(R.id.library_song_entry_label_artist_album);
+            mOptions = (ImageButton) itemView.findViewById(R.id.library_entry_button_more);
+            mOptions.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "more option on click");
+                }
+            });
         }
     }
 
     private class LibraryAdapter extends RecyclerView.Adapter<LibraryItemHolder> {
-        private List<String> items;
-        public LibraryAdapter(List<String> songs) {
-            items = songs;
+        private List<MusicFile> mMusicFiles;
+        public LibraryAdapter(List<MusicFile> files) {
+            mMusicFiles = files;
         }
+
         @Override
         public LibraryItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            View view = layoutInflater.inflate(R.layout.library_song_entry, parent, false);
             return new LibraryItemHolder(view);
         }
         @Override
         public void onBindViewHolder(LibraryItemHolder holder, int position) {
-            String s = items.get(position);
-            holder.mTitle.setText(s);
+            MusicFile file = mMusicFiles.get(position);
+            holder.mTitle.setText(file.getTitle());
+            holder.mArtistAlbum.setText(file.getArtist() + " - " + file.getAlbum());
         }
 
         @Override
         public int getItemCount() {
-            return items.size();
+            return mMusicFiles.size();
         }
     }
 }

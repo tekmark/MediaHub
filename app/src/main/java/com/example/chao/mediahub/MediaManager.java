@@ -1,6 +1,7 @@
 package com.example.chao.mediahub;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
@@ -20,20 +21,28 @@ import java.util.List;
 public class MediaManager {
     final static private String TAG = "MediaManager";
     //final static private String DEFAULT_MEDIA_DIR = Environment.DIRECTORY_MUSIC;
-    static public void scan(final Context context, String directory) {
+
+    static public void scan (final Context context, String directory) {
         String scanDir = null;
         if (directory == null) {        //scan default if directory is null;
+            Log.d(TAG, "Directory is not specified. Check external storage status ...");
             //check if mounted.
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                Log.d(TAG, "External storage is mounted");
                 scanDir = Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_MUSIC).getAbsolutePath();
             } else {
-                Log.e(TAG, "sdcard is not available");
+                Log.e(TAG, "External storage is not available");
                 return;
             }
         } else {        //scan directory
             File dir = new File(directory);
             if (dir.exists() && dir.isDirectory()) {
+                Log.d(TAG, "Directory exists. path: " + directory);
+                String names[] = dir.list();
+                for (String s: names) {
+                    Log.d(TAG, s);
+                }
                 scanDir = directory;
             } else {
                 Log.e(TAG, "Failed to find directory : " + directory);
@@ -42,7 +51,7 @@ public class MediaManager {
         }
         Log.d(TAG, "Scan directory : " + scanDir);
         //add media files to media store;
-        MediaScannerConnection.scanFile(context, new String[]{scanDir}, new String[]{"audio/*"}, new MediaScannerConnection.OnScanCompletedListener() {
+        MediaScannerConnection.scanFile(context, new String[]{scanDir}, /*new String[]{"audio/*"}*/null, new MediaScannerConnection.OnScanCompletedListener() {
             @Override
             public void onScanCompleted(String path, Uri uri) {
                 //Toast.makeText(context, "Scan Complete", Toast.LENGTH_SHORT);
@@ -51,20 +60,110 @@ public class MediaManager {
         });
     }
 
+    static public ArrayList<MusicFile> getAllMusicFiles(Context context) {
+        Log.d(TAG, "Scan all songs in MediaStore");
+        ArrayList<MusicFile> musicFiles;
+        ContentResolver musicResolver = context.getContentResolver();
+        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
 
-    static public ArrayList<String> getAllMusicFiles(Context context) {
-        //Log.d("Songs Manager", "scan all songs on disk");
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+        Log.d(TAG, "Query Content Resolver. URI = " + musicUri.toString());
+        if (musicCursor != null && musicCursor.moveToFirst())
+        {
+            // clear list to prevent duplicates
+            musicFiles = new ArrayList<>();
+            //Log.d(TAG, "TITLE | _ID | ARTIST | IS_MUSIC | DURATION");
+            //get columns
+            int titleColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.TITLE);
+            int idColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media._ID);
+            int artistColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ARTIST);
+            int albumColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.ALBUM);
+            int isMusicColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.IS_MUSIC);
+            int durationColumn = musicCursor.getColumnIndex
+                    (android.provider.MediaStore.Audio.Media.DURATION);
+            int pathColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            Log.d(TAG, "Start to parse MediaStore ");
+            do
+            {
+                String filePath = musicCursor.getString(pathColumn);
+                // check if the file is a music and the type is supported
+                if (musicCursor.getInt(isMusicColumn) != 0 && filePath != null && musicCursor.getInt(durationColumn) > 0)
+                {
+                    int thisId = musicCursor.getInt(idColumn);
+                    String thisTitle = musicCursor.getString(titleColumn);
+                    String thisArtist = musicCursor.getString(artistColumn);
+                    String thisAlubm = musicCursor.getString(albumColumn);
+                    /*Song song = new Song();
+                    song.setId(thisId);
+                    if(!thisArtist.equals("<unknown>"))
+                    {
+                        song.setArtist(thisArtist);
+                        song.setTitle(thisTitle);
+                    }
+                    else
+                    {
+                        song.setArtist("");
+                        song.setTitle("");
+                    }
+                    song.setSongPath(filePath);
+                    File file = new File(filePath);
+                    song.setFileName(file.getName().substring(0, (file.getName().length() - 4)));*/
+                    //Log.v(TAG, "Found music file : " + filePath);
+                    Log.d(TAG, "ID: " + thisId + " Title: " + thisTitle + " Artist: " + thisArtist +
+                            "Album : " + thisAlubm + " Path: " + filePath);
+                    MusicFile file = new MusicFile();
+                    file.setTitle(thisTitle);
+                    file.setArtist(thisArtist);
+                    file.setId(thisId);
+                    file.setAlbum(thisAlubm);
+                    musicFiles.add(file);
+                }
+            }
+            while (musicCursor.moveToNext());
+            Log.d(TAG, "Finish." + musicFiles.size() + " songs added");
+            musicCursor.close();
+        } else { // if we don't have any media in the folder that we selected set NO MEDIA
+            //addNoSongs();
+            Log.d(TAG, "No songs");
+            //clear list;
+            musicFiles = new ArrayList<MusicFile>();
+        }
+
+
+        if (musicFiles.size() == 0)
+        {
+            //addNoSongs();
+        }
+/*
+        Collections.sort(musicFiles, new Comparator<Song>() {
+            @Override
+            public int compare(Song song, Song song2) {
+                int compare = song.getTitle().compareTo(song2.getTitle());
+                return ((compare == 0) ? song.getArtist().compareTo(
+                        song2.getArtist()) : compare);
+            }
+        });
+*/
+        return musicFiles;
+    }
+    static public ArrayList<String> getAllMusicFileTitles(Context context) {
+        Log.d(TAG, "Scan all songs in MediaStore");
         ArrayList<String> songsList;
         ContentResolver musicResolver = context.getContentResolver();
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String col[] ={android.provider.MediaStore.Audio.Media._ID};
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
 
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+        Log.d(TAG, "Query Content Resolver. URI = " + musicUri.toString());
         if (musicCursor != null && musicCursor.moveToFirst())
         {
-            // clear  list to prevent duplicates
+            // clear list to prevent duplicates
             songsList = new ArrayList<>();
-
+            //Log.d(TAG, "TITLE | _ID | ARTIST | IS_MUSIC | DURATION");
             //get columns
             int titleColumn = musicCursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
@@ -74,14 +173,15 @@ public class MediaManager {
                     (android.provider.MediaStore.Audio.Media.ARTIST);
             int isMusicColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.IS_MUSIC);
-            int duration = musicCursor.getColumnIndex
+            int durationColumn = musicCursor.getColumnIndex
                     (MediaStore.Audio.Media.DURATION);
-
+            int pathColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            Log.d(TAG, "Start to parse MediaStore ");
             do
             {
-                String filePath = musicCursor.getString(musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String filePath = musicCursor.getString(pathColumn);
                 // check if the file is a music and the type is supported
-                if (musicCursor.getInt(isMusicColumn) != 0 && filePath != null && musicCursor.getInt(duration) > 0)
+                if (musicCursor.getInt(isMusicColumn) != 0 && filePath != null && musicCursor.getInt(durationColumn) > 0)
                 {
                     int thisId = musicCursor.getInt(idColumn);
                     String thisTitle = musicCursor.getString(titleColumn);
@@ -101,19 +201,24 @@ public class MediaManager {
                     song.setSongPath(filePath);
                     File file = new File(filePath);
                     song.setFileName(file.getName().substring(0, (file.getName().length() - 4)));*/
-                    Log.d(TAG, "ID: " + thisId + " Title: " + thisTitle + " Artist: " + thisArtist);
+                    //Log.v(TAG, "Found music file : " + filePath);
+                    Log.d(TAG, "ID: " + thisId + " Title: " + thisTitle + " Artist: " + thisArtist +
+                            "Path: " + filePath);
                     songsList.add(thisTitle);
                 }
             }
             while (musicCursor.moveToNext());
+            Log.d(TAG, "Finish." + songsList.size() + " songs added");
+            musicCursor.close();
         } else { // if we don't have any media in the folder that we selected set NO MEDIA
             //addNoSongs();
+            Log.d(TAG, "No songs");
+            //clear list;
             songsList = new ArrayList<String>();
         }
 
-        musicCursor.close();
 
-        if(songsList.size() == 0)
+        if (songsList.size() == 0)
         {
             //addNoSongs();
         }
@@ -131,10 +236,12 @@ public class MediaManager {
     }
 
     static public List<Playlist> getAllPlaylists(Context context) {
-        List<Playlist> playlists = new ArrayList<>();
+        Log.d(TAG, "Scan all playlists in MediaStore. Playlist_ID | Playlist_NAME");
+        List<Playlist> playlists = new ArrayList<Playlist>();
         String proj [] = {MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME};
         ContentResolver resolver = context.getContentResolver();
         Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        Log.d(TAG, "URI = " + uri.toString());
         Cursor playlistCursor = resolver.query(uri, proj, null, null, null);
         if (playlistCursor == null) {
             Log.e(TAG, "Query MediaStore failed");
@@ -142,17 +249,18 @@ public class MediaManager {
         }
         int columnCount = playlistCursor.getColumnCount();
         int rowCount = playlistCursor.getCount();
-        Log.d(TAG, "# of Columns : " + columnCount + " # of records : " + rowCount);
+        Log.d(TAG, "Found " + rowCount + " records(playlists).");
         if (columnCount > 0) {
             String columnNames[] = playlistCursor.getColumnNames();
             int indexes[] = new int[columnCount];
             int i = 0;
             for(String colName : columnNames) {
                 indexes[i] = playlistCursor.getColumnIndex(colName);
-                Log.d(TAG, "Column Name: " + colName + " Column Index: " + indexes[i]);
+                Log.v(TAG, "Column Name: " + colName + " Column Index: " + indexes[i]);
                 ++i;
             }
             if (rowCount > 0 && playlistCursor.moveToFirst()) {
+                Log.d(TAG, "Start to read playlist");
                 while (!playlistCursor.isAfterLast()) {
                     int playlistId = playlistCursor.getInt(indexes[0]);
                     String playlistName = playlistCursor.getString(indexes[1]);
@@ -164,12 +272,14 @@ public class MediaManager {
                 }
             }
             playlistCursor.close();
+        } else {
+            Log.e(TAG, " 0 column, check MediaStore");
         }
         return playlists;
     }
 
     static public List<MusicFile> getPlaylistMusicFiles(Context context, int playlistId) {
-        List<MusicFile> musicFiles = new ArrayList<>();
+            List<MusicFile> musicFiles = new ArrayList<>();
         Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
 
         String[] proj = {
@@ -235,4 +345,44 @@ public class MediaManager {
 
         return musicFiles;
     }
+
+    public static int lookupPlaylistId(Context context, String playlistName) {
+
+        int playlistId = -1;
+
+        return playlistId;
+    }
+
+    public static void writePlaylist(Context context, String playlistName,
+                                      ArrayList<String> audioIds) {
+        ContentResolver resolver = context.getContentResolver();
+
+        int playlistId = lookupPlaylistId(context, playlistName);
+
+        Uri uri;
+        if (playlistId == -1) {     //create new playlist
+            Log.d(TAG, "Create a new playlist : " + playlistName);
+            ContentValues values = new ContentValues(1);
+            values.put(MediaStore.Audio.Playlists.NAME, playlistName);
+            uri = resolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values);
+
+        } else {                    //update old playlist
+
+        }
+
+        //add songs;
+        Log.d(TAG, "# of songs : " + audioIds.size());
+    }
+
+    public static void deletePlaylist(Context context, int playlistId) {
+        ContentResolver resolver = context.getContentResolver();
+        // Delete playlist contents
+        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external",
+                playlistId);
+        resolver.delete(uri, null, null);
+        // Delete row in playlist database
+        String filter = MediaStore.Audio.Playlists._ID + "=" + playlistId;
+        resolver.delete(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, filter, null);
+    }
+
 }

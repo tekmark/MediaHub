@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -44,6 +45,8 @@ public class PlaylistsTabFragment extends Fragment {
 
     private RecyclerView mPlaylistsRecyclerView;
     private PlaylistsAdapter mAdapter;
+
+    private Button mNewPlaylistButton;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -80,6 +83,14 @@ public class PlaylistsTabFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_playlists_tab, container, false);
+        mNewPlaylistButton = (Button) rootView.findViewById(R.id.button_new_playlist);
+        mNewPlaylistButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Create a new playlist");
+                createPlaylist(v);
+            }
+        });
         mPlaylistsRecyclerView = (RecyclerView) rootView.findViewById(R.id.playlists_recycler_view);
         mPlaylistsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         updateUI();
@@ -91,6 +102,13 @@ public class PlaylistsTabFragment extends Fragment {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
+    }
+
+    public void createPlaylist(View view) {
+        Intent intent = new Intent(getContext(), CreatePlaylistActivity.class);
+        startActivity(intent);
+        Log.d(TAG, "Show Playing");
+        //overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_no_anim);
     }
 
 //    @Override

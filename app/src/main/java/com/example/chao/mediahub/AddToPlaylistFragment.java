@@ -1,14 +1,17 @@
 package com.example.chao.mediahub;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.chao.mediahub.dummy.DummyContent;
 import com.example.chao.mediahub.dummy.DummyContent.DummyItem;
@@ -17,24 +20,19 @@ import java.util.List;
 
 /**
  * A fragment representing a list of Items.
- * <p/>
+ * <p />
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class AddToPlaylistFragment extends Fragment {
+public class AddToPlaylistFragment extends android.support.v4.app.Fragment {
+    final static String TAG = "AddToPlaylistFragment";
+    // TODO: Customize parameters
+    private int mColumnCount = 1;
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
-    private int mColumnCount = 1;
-    private OnListFragmentInteractionListener mListener;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public AddToPlaylistFragment() {
-    }
+    private OnListFragmentInteractionListener mListener;
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -44,6 +42,13 @@ public class AddToPlaylistFragment extends Fragment {
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    /**
+     * Mandatory empty constructor for the fragment manager to instantiate the
+     * fragment (e.g. upon screen orientation changes).
+     */
+    public AddToPlaylistFragment() {
     }
 
     @Override
@@ -58,8 +63,8 @@ public class AddToPlaylistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_addtoplaylist_list, container, false);
-
+        View rootView = inflater.inflate(R.layout.fragment_addtoplaylist_list, container, false);
+        View view = rootView.findViewById(R.id.list);
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -70,20 +75,22 @@ public class AddToPlaylistFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
             recyclerView.setAdapter(new MyAddToPlaylistRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+        } else {
+            Log.e(TAG, "Cannot get RecyclerView");
         }
-        return view;
+        return rootView;
     }
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnListFragmentInteractionListener) {
+        /*if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
-        }
+        }*/
     }
 
     @Override
@@ -91,7 +98,6 @@ public class AddToPlaylistFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -104,6 +110,7 @@ public class AddToPlaylistFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        public void onListFragmentInteraction(DummyItem item);
     }
+
 }

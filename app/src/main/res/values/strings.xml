@@ -7,7 +7,8 @@
     <string name="play_all">Play All</string>
     <string name="unknown_music">Unknown Music</string>
     <string name="unknown_artist">Unknown Artist</string>
-<!-- TODO: Remove or change this placeholder text -->
+    <string name="unknown_album">Unknown Album</string>
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_playlist">PlaylistActivity</string>
     <string name="title_activity_playing">Playing</string>
@@ -19,9 +20,16 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
+    <string name="new_playlist">New Playlist</string>
 
     <!-- clock-->
     <string name="am">AM</string>
     <string name="pm">PM</string>
     <string name="alarm">ALARM</string>
+
+
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="ok">OK</string>
+    <string name="title_activity_playlist_add_music">PlaylistAddMusicActivity</string>
 </resources>

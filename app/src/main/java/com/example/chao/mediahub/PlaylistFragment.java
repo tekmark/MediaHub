@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -27,8 +28,10 @@ public class PlaylistFragment extends Fragment {
     final private static String ARG_PLAYLIST_ID = "PLAYLIST_ID";
     private EventListener mListener;
 
+
     private RecyclerView mPlaylistRecyclerView;
     private PlaylistAdapter mAdapter;
+
     private int mPlaylistId;
     List<MusicFile> mPlaylist;
 //    private MusicPlaybackService mPlaybackService;
@@ -85,6 +88,7 @@ public class PlaylistFragment extends Fragment {
         Log.d(TAG, "onCreateView is called");
         //return inflater.inflate(R.layout.fragment_playlist, container, false);
         View rootView = inflater.inflate(R.layout.fragment_playlist, container, false);
+
         mPlaylistRecyclerView = (RecyclerView) rootView.findViewById(R.id.playlist_entries_recycler_view);
         mPlaylistRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 

@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.chao.mediahub.ItemFragment.OnListFragmentInteractionListener;
+import com.example.chao.mediahub.CreatePlaylistAddMusicFragment.OnListFragmentInteractionListener;
 import com.example.chao.mediahub.dummy.DummyContent.DummyItem;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class MyaddsinglesongitemRecyclerViewAdapter extends RecyclerView.Adapter
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_item, parent, false);
+                .inflate(R.layout.fragment_addsinglesongitem, parent, false);
         return new ViewHolder(view);
     }
 

@@ -4,9 +4,11 @@ import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -55,17 +57,16 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mViewPager);
 
 
-
         MediaManager.scan(getApplicationContext(), null);
-        MediaManager.getAllMusicFiles(getApplicationContext());
-
+        //MediaManager.getAllMusicFiles(getApplicationContext());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                showDialog();
             }
         });
 
@@ -101,6 +102,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    void showDialog() {
+        Log.d(TAG, "show dialog");
+        Fragment dialog = AddToPlaylistFragment.newInstance(1);
+
+//        dialog.show(getSupportFragmentManager(), "ADD TO PLAYLIST");
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.main_content, dialog, "TAG");
+        ft.commit();
+    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to

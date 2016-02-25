@@ -12,7 +12,7 @@ import android.widget.TextView;
 /**
  * Created by chaohan on 10/28/15.
  */
-public class MediaPlayerController {
+public class MediaplayerController {
     final static public int PLAY_PREVIOUS_THRESHOLD_SEC = 10;
     final static public int DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC = 200;
     final static public int DEFAULT_PROGRESS_BAR_REFRESH_TIMES = 500;
@@ -43,13 +43,13 @@ public class MediaPlayerController {
 
     private Handler mHandler = new Handler();
 
-    private MediaPlayerController(Activity activity) {
+    private MediaplayerController(Activity activity) {
         bound = false;
         bindLayout(activity);
     }
 
-    public static MediaPlayerController newInstance(Activity activity) {
-        MediaPlayerController controller = new MediaPlayerController(activity);
+    public static MediaplayerController newInstance(Activity activity) {
+        MediaplayerController controller = new MediaplayerController(activity);
         return controller;
     }
 

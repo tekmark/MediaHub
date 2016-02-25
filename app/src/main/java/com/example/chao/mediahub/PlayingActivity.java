@@ -5,7 +5,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Binder;
 import android.os.IBinder;
 
 import android.support.v7.app.ActionBar;
@@ -44,7 +43,7 @@ public class PlayingActivity extends AppCompatActivity {
     private ViewPager mViewPager;
 
     private MusicPlaybackService mPlaybackService;
-    private MediaPlayerController mController;
+    private MediaplayerController mController;
     private boolean mBound;
 
 //    private MediaplayerControllerFragment mControllerFragment;
@@ -72,7 +71,7 @@ public class PlayingActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        mController = MediaPlayerController.newInstance(this);
+        mController = MediaplayerController.newInstance(this);
         mController.enableSeek(true);
 
     }
