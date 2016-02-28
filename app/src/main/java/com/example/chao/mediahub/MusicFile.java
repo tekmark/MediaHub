@@ -1,9 +1,12 @@
 package com.example.chao.mediahub;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by CHAO on 10/26/2015.
  */
-public class MusicFile {
+public class MusicFile implements Parcelable {
     final static public String UNKNOWN_MUSIC="Unknown Music";
     final static public String UNKNOWN_ARTIST="Unknown Artist";
     final static public String UNKNOWN_ALBUM="Unknown Album";
@@ -45,6 +48,27 @@ public class MusicFile {
         duration = musicFile.duration;
         id = musicFile.id;
         audioId = musicFile.audioId;
+    }
+
+    public MusicFile(Parcel in) {
+        audioId = in.readInt();
+        title = in.readString();
+        artist = in.readString();
+        id = in.readInt();
+        path = in.readString();
+        duration = in.readInt();
+        album = in.readString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        //boolean isSame = false;
+        if (o != null && o instanceof MusicFile) {
+            if (id == ((MusicFile)o).id){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void set(int pos, String s) {
@@ -142,4 +166,30 @@ public class MusicFile {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(audioId);
+        dest.writeString(title);
+        dest.writeString(artist);
+        dest.writeInt(id);
+        dest.writeString(path);
+        dest.writeInt(duration);
+        dest.writeString(album);
+    }
+
+    public static final Parcelable.Creator<MusicFile> CREATOR = new Parcelable.Creator<MusicFile> () {
+
+        public MusicFile createFromParcel(Parcel in) {
+            return new MusicFile(in);
+        }
+        public MusicFile[] newArray(int size) {
+            return new MusicFile[size];
+        }
+    };
 }

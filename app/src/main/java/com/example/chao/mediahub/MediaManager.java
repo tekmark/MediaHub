@@ -1,5 +1,6 @@
 package com.example.chao.mediahub;
 
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -60,7 +61,7 @@ public class MediaManager {
         });
     }
 
-    static public ArrayList<MusicFile> getAllMusicFiles(Context context) {
+    static public List<MusicFile> getAllMusicFiles(Context context) {
         Log.d(TAG, "Scan all songs in MediaStore");
         ArrayList<MusicFile> musicFiles;
         ContentResolver musicResolver = context.getContentResolver();
@@ -354,11 +355,11 @@ public class MediaManager {
     }
 
     public static void writePlaylist(Context context, String playlistName,
-                                      ArrayList<String> audioIds) {
+                                      List<String> audioIds) {
         ContentResolver resolver = context.getContentResolver();
 
         int playlistId = lookupPlaylistId(context, playlistName);
-
+        int playOrder = 1;
         Uri uri;
         if (playlistId == -1) {     //create new playlist
             Log.d(TAG, "Create a new playlist : " + playlistName);
@@ -367,11 +368,34 @@ public class MediaManager {
             uri = resolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values);
 
         } else {                    //update old playlist
-
+            Log.d(TAG, "update old playlist");
+            uri = null;
         }
 
-        //add songs;
-        Log.d(TAG, "# of songs : " + audioIds.size());
+        if (uri != null) {
+            //add songs;
+            Log.d(TAG, "# of songs : " + audioIds.size());
+            Log.d(TAG, "playlist uri: " + uri.toString());
+            int size = audioIds.size();
+            ContentProviderClient provider = resolver.acquireContentProviderClient(uri);
+            if (provider != null) {
+                ContentValues values[] = new ContentValues[size];
+                for (int i = 0; i < size; ++i) {
+                    values[i] = new ContentValues();
+                    values[i].put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioIds.get(i));
+                    values[i].put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, playOrder);
+                    ++playOrder;
+                    resolver.insert(uri, values[i]);
+                }
+                //resolver.bulkInsert(uri, values);
+                provider.release();
+                Log.d(TAG, size + " music files are added.");
+            } else {
+                Log.e(TAG, "ContentProvider Error");
+            }
+        } else {
+            Log.e(TAG, "URI is null");
+        }
     }
 
     public static void deletePlaylist(Context context, int playlistId) {
@@ -384,5 +408,4 @@ public class MediaManager {
         String filter = MediaStore.Audio.Playlists._ID + "=" + playlistId;
         resolver.delete(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, filter, null);
     }
-
 }

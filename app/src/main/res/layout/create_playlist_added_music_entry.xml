@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <Button
+        android:id="@+id/paylist_add_music_button_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"/>
+    <include layout="@layout/music_file_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/paylist_add_music_button_add"
+        android:layout_toStartOf="@id/paylist_add_music_button_add"
+        android:layout_alignTop="@id/paylist_add_music_button_add"
+        android:layout_alignBottom="@id/paylist_add_music_button_add"/>
+
+</RelativeLayout>
