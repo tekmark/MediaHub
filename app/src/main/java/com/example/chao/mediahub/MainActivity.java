@@ -1,10 +1,12 @@
 package com.example.chao.mediahub;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -18,11 +20,18 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity
+        implements PlaylistsTabFragment.OnInteractionListener,
+        PlaylistMgmtFragment.OnInteractionListener {
 
     final private static String TAG = "MainActivity";
+
+    final private static String PLAYLIST_OPTIONS_FRAGMENT_TAG = "PlaylistOptionsFragment";
+
+    final private static int LIBRARY_PAGE_POS = 0;
+    final private static int PLAYLISTS_PAGE_POS = 1;
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -52,10 +61,36 @@ public class MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Toast.makeText(MainActivity.this,
+                        "Selected page position: " + position, Toast.LENGTH_SHORT).show();
+                if (position == PLAYLISTS_PAGE_POS)  {
+
+                } else if (position == LIBRARY_PAGE_POS) {
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(PLAYLIST_OPTIONS_FRAGMENT_TAG);
+                    if (fragment != null) {
+                        onFragmentClose();
+                    }
+                } else {
+
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
 
         MediaManager.scan(getApplicationContext(), null);
         //MediaManager.getAllMusicFiles(getApplicationContext());
@@ -67,9 +102,9 @@ public class MainActivity extends AppCompatActivity {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                 showDialog();
+                //showPlaylistMgmtDialog();
             }
         });
-
     }
 
     @Override
@@ -79,6 +114,13 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        //save current state
+        Log.d(TAG, "onSaveInstanceState(), current item : " + mViewPager.getCurrentItem());
+        savedInstanceState.putInt("CurrentPagePosition", mViewPager.getCurrentItem());
+        super.onSaveInstanceState(savedInstanceState);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -112,6 +154,78 @@ public class MainActivity extends AppCompatActivity {
         ft.commit();
     }
 
+    private void showPlaylistMgmtDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Fragment dialog = PlaylistMgmtFragment.newInstance("", "");
+        ft.add(R.id.main_content, dialog, "OptionsFragment");
+        ft.commit();
+    }
+
+    @Override
+    public void onPlaylistOptionsClick(int playlistId) {
+        Log.d(TAG, "Interaction, playlist id : " + playlistId);
+//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+//        Fragment dialog = PlaylistMgmtFragment.newInstance(Integer.toString(playlistId), "");
+//        ft.add(R.id.main_content, dialog, "OptionsFragment");
+//        ft.commit();
+        updatePlaylistOptionsFragment(playlistId);
+    }
+
+    @Override
+    public void onFragmentClose() {
+        Log.d(TAG, "onFragmentClose");
+        Fragment options = getSupportFragmentManager().findFragmentByTag(PLAYLIST_OPTIONS_FRAGMENT_TAG);
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.remove(options);
+        ft.commit();
+    }
+
+    @Override
+    public void onDeleteDialog() {
+        Log.d(TAG, "onDeleteDialog");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage("delete?").setTitle("empty");
+
+        // Add the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                Log.d(TAG, "OK");
+                PlaylistMgmtFragment fragment = (PlaylistMgmtFragment) getSupportFragmentManager().findFragmentByTag("OptionsFragment");
+                fragment.deletePlaylist();
+//                finish();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                Log.d(TAG, "Cancel");
+            }
+        });
+        // 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void updatePlaylistOptionsFragment (int playlistId) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment fragment = fm.findFragmentByTag(PLAYLIST_OPTIONS_FRAGMENT_TAG);
+
+        if (fragment != null) {
+//            ft.setCustomAnimations(R.anim.slide_out_no_anim, R.anim.slide_out_down);
+            ft.remove(fragment);
+        }
+
+        fragment = PlaylistMgmtFragment.newInstance(Integer.toString(playlistId), "");
+//        ft.setCustomAnimations(R.anim.slide_in_up, 0);
+        ft.add(R.id.main_content, fragment, PLAYLIST_OPTIONS_FRAGMENT_TAG);
+        ft.commit();
+    };
+
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -127,9 +241,9 @@ public class MainActivity extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             //return PlaceholderFragment.newInstance(position + 1);
-            if (position == 0) {
+            if (position == LIBRARY_PAGE_POS) {
                 return LibraryTabFragment.newInstance("0", "0");
-            } else if (position == 1) {
+            } else if (position == PLAYLISTS_PAGE_POS) {
                 return PlaylistsTabFragment.newInstance("0", "0");
             } else {
                 Log.e(TAG, "page section error");
@@ -147,9 +261,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
+                case LIBRARY_PAGE_POS:
                     return "Library";
-                case 1:
+                case PLAYLISTS_PAGE_POS:
                     return "Playlists";
             }
             return null;

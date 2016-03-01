@@ -6,8 +6,11 @@ package com.example.chao.mediahub;
 public class Playlist {
     final static private String DEFAULT_PLAYLIST_NAME = "New Playlist";
     final static public int INVALID_ID = -1;
+
     private String mName;
     private int mId;
+    private int mSize;
+
     //private int mMediaStoreId;
     public Playlist() {
         mName = DEFAULT_PLAYLIST_NAME;
@@ -18,6 +21,7 @@ public class Playlist {
     public Playlist(Playlist playlist) {
         mName = playlist.mName;
         mId = playlist.mId;
+        mSize = playlist.mSize;
     }
 
     public String getName() {
@@ -33,4 +37,14 @@ public class Playlist {
     public void setId(int id) {
         mId = id;
     }
+    public void setSize(int size) {
+        mSize = size;
+    }
+    public int getSize() {
+        return mSize;
+    }
+
+
+
+
 }

@@ -103,10 +103,10 @@ public class LibraryTabFragment extends Fragment {
 //    public void onAttach(Activity activity) {
 //        super.onAttach(activity);
 //        try {
-//            mListener = (OnFragmentInteractionListener) activity;
+//            mListener = (OnInteractionListener) activity;
 //        } catch (ClassCastException e) {
 //            throw new ClassCastException(activity.toString()
-//                    + " must implement OnFragmentInteractionListener");
+//                    + " must implement OnInteractionListener");
 //        }
 //    }
 

@@ -24,7 +24,7 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class AddToPlaylistFragment extends android.support.v4.app.Fragment {
+public class AddToPlaylistFragment extends Fragment {
     final static String TAG = "AddToPlaylistFragment";
     // TODO: Customize parameters
     private int mColumnCount = 1;
@@ -110,7 +110,7 @@ public class AddToPlaylistFragment extends android.support.v4.app.Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onListFragmentInteraction(DummyItem item);
+         void onListFragmentInteraction(DummyItem item);
     }
 
 }

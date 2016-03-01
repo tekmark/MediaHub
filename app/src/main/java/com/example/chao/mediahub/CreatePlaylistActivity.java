@@ -58,6 +58,9 @@ public class CreatePlaylistActivity extends AppCompatActivity {
             }
         });
 
+        int playlistId = getIntent().getIntExtra("playlist_id", -1);
+        Log.d(TAG, "Playlist ID : " + playlistId);
+
         //currentAdded
         if (savedInstanceState != null) {
             Log.d(TAG, "Restore Saved State");
@@ -67,6 +70,12 @@ public class CreatePlaylistActivity extends AppCompatActivity {
             Log.d(TAG, "No Saved Instance State");
             mMusicFiles = new ArrayList<>();
             mAddedMusicFiles = new ArrayList<>();
+            if (playlistId != -1) {
+                List<MusicFile> list = MediaManager.getPlaylistMusicFiles(getApplicationContext(), playlistId);
+                Log.d(TAG, "playlist id : " + playlistId + " exists. list size : " + list.size());
+                mMusicFiles.addAll(list);
+                mAddedMusicFiles.addAll(list);
+            }
         }
 
         mAddSongs = (Button) findViewById(R.id.create_playlist_button_add);

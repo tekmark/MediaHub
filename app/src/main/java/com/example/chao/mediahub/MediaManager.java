@@ -237,7 +237,7 @@ public class MediaManager {
     }
 
     static public List<Playlist> getAllPlaylists(Context context) {
-        Log.d(TAG, "Scan all playlists in MediaStore. Playlist_ID | Playlist_NAME");
+        Log.d(TAG, "Scan all playlists in MediaStore. Playlist_ID | Playlist_NAME | Playlist_SIZE");
         List<Playlist> playlists = new ArrayList<Playlist>();
         String proj [] = {MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME};
         ContentResolver resolver = context.getContentResolver();
@@ -247,6 +247,13 @@ public class MediaManager {
         if (playlistCursor == null) {
             Log.e(TAG, "Query MediaStore failed");
             return playlists;
+        } else {
+            String colNames = "";
+            for (String s: playlistCursor.getColumnNames()) {
+                colNames += s;
+                colNames += "|";
+            }
+            Log.d(TAG, "column names: " + colNames);
         }
         int columnCount = playlistCursor.getColumnCount();
         int rowCount = playlistCursor.getCount();
@@ -265,9 +272,15 @@ public class MediaManager {
                 while (!playlistCursor.isAfterLast()) {
                     int playlistId = playlistCursor.getInt(indexes[0]);
                     String playlistName = playlistCursor.getString(indexes[1]);
+                    //int playlistSize = playlistCursor.getInt(indexes[2]);
                     Playlist playlist = new Playlist(playlistName);
                     playlist.setId(playlistId);
                     Log.d(TAG, "Playlist Id : " + playlistId + " Playlist Name : " + playlistName);
+
+                    //TODO: memory cost/efficiency, a new private method might be better.
+                    List<MusicFile> files = getPlaylistMusicFiles(context, playlistId);
+                    playlist.setSize(files.size());
+                    Log.d(TAG, " # of files : " + files.size());
                     playlists.add(playlist);
                     playlistCursor.moveToNext();
                 }

@@ -1,5 +1,6 @@
 package com.example.chao.mediahub;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,16 +13,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link PlaylistsTabFragment.OnFragmentInteractionListener} interface
+ * {@link OnInteractionListener} interface
  * to handle interaction events.
  * Use the {@link PlaylistsTabFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -40,7 +41,7 @@ public class PlaylistsTabFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    private OnInteractionListener mListener;
 
 
     private RecyclerView mPlaylistsRecyclerView;
@@ -98,11 +99,11 @@ public class PlaylistsTabFragment extends Fragment {
     }
 
     // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
+//    public void onButtonPressed(Uri uri) {
+//        if (mListener != null) {
+//            mListener.onFragmentInteraction(uri);
+//        }
+//    }
 
     public void createPlaylist(View view) {
         Intent intent = new Intent(getContext(), CreatePlaylistActivity.class);
@@ -111,16 +112,16 @@ public class PlaylistsTabFragment extends Fragment {
         //overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_no_anim);
     }
 
-//    @Override
-//    public void onAttach(Activity activity) {
-//        super.onAttach(activity);
-//        try {
-//            mListener = (OnFragmentInteractionListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-//    }
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mListener = (OnInteractionListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnInteractionListener");
+        }
+    }
 
     @Override
     public void onDetach() {
@@ -138,9 +139,10 @@ public class PlaylistsTabFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+//        void onFragmentInteraction(Uri uri);
+        void onPlaylistOptionsClick(int playlistId);
     }
 
     private void updateUI() {
@@ -153,11 +155,23 @@ public class PlaylistsTabFragment extends Fragment {
             implements View.OnClickListener{
         //public TextView mTitle;
         private TextView mPlaylistName;
+        private ImageButton mMoreOptions;
+        private TextView mPlaylistSize;
         private Playlist mPlaylist;
+
         public PlaylistsItemHolder(View itemView) {
             super(itemView);
             //mTitle = (TextView)itemView;
             mPlaylistName = (TextView) itemView.findViewById(R.id.playlist_name);
+            mPlaylistSize = (TextView) itemView.findViewById(R.id.playlist_number_of_songs);
+            mMoreOptions = (ImageButton) itemView.findViewById(R.id.playlist_more_options);
+            mMoreOptions.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "MoreOptions Button onClick(), Playlist ID : " + mPlaylist.getId());
+                    mListener.onPlaylistOptionsClick(mPlaylist.getId());
+                }
+            });
             itemView.setOnClickListener(this);
         }
 
@@ -184,7 +198,7 @@ public class PlaylistsTabFragment extends Fragment {
         @Override
         public PlaylistsItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater.inflate(R.layout.playlists_list_item, parent, false);
+            View view = layoutInflater.inflate(R.layout.playlists_item_entry, parent, false);
             return new PlaylistsItemHolder(view);
         }
         @Override
