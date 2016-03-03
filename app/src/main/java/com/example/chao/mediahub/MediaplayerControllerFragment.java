@@ -188,10 +188,10 @@ public class MediaplayerControllerFragment extends Fragment {
                 //sync progress bar
                 if (mTotalDuration != null && mCurrDuration != null && mProgressBar != null) {
                     int totalDuration = (int) mService.getTotalDuration();
-                    mTotalDuration.setText(Utilities.millSecondsToTime(totalDuration));
+                    mTotalDuration.setText(Utils.millSecondsToTime(totalDuration));
                     mProgressBar.setMax(totalDuration);
                     int currentPosition = (int) mService.getCurrentDuration();
-                    mCurrDuration.setText(Utilities.millSecondsToTime(currentPosition));
+                    mCurrDuration.setText(Utils.millSecondsToTime(currentPosition));
                     mProgressBar.setProgress(currentPosition);
                 }
                 //sync play_pause button

@@ -5,8 +5,16 @@
     android:layout_marginLeft="10sp"
     android:layout_marginRight="10sp"
     android:background="@drawable/playlist_entry_background">
-    <ImageButton
-        android:id="@+id/library_entry_button_more"
+    <include android:id="@+id/library_list_entry_music_file_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/library_list_entry_button_more"
+        android:layout_toStartOf="@id/library_list_entry_button_more"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@id/library_list_entry_button_more"
+        layout="@layout/music_file_info" />
+
+    <ImageButton android:id="@id/library_list_entry_button_more"
         android:contentDescription="More button shows more options"
         android:background="@color/transparent"
         android:src="@drawable/more_32"
@@ -16,6 +24,7 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
+    <!--
     <TextView
         android:id="@+id/library_song_entry_label_title"
         android:text="@string/unknown_music"
@@ -41,4 +50,5 @@
         android:layout_toLeftOf="@id/library_entry_button_more"
         android:layout_height="wrap_content"
         android:layout_width="match_parent" />
+        -->
 </RelativeLayout>

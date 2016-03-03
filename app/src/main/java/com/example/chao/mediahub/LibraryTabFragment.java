@@ -1,6 +1,6 @@
 package com.example.chao.mediahub;
 
-import android.content.Intent;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -14,7 +14,6 @@ import android.support.v4.app.Fragment;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,18 +26,18 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class LibraryTabFragment extends Fragment {
+
+    private static final String TAG = "LibraryTabFragment";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
-    final static private String TAG = "LibraryTabFragment";
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    private OnInteractionListener mListener;
 
     private LibraryAdapter mAdapter;
 
@@ -78,6 +77,7 @@ public class LibraryTabFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView()");
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_library_tab, container, false);
         TextView textView = (TextView) rootView.findViewById(R.id.section_label);
@@ -95,20 +95,20 @@ public class LibraryTabFragment extends Fragment {
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+//            mListener.onInteraction();
         }
     }
 
-//    @Override
-//    public void onAttach(Activity activity) {
-//        super.onAttach(activity);
-//        try {
-//            mListener = (OnInteractionListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " must implement OnInteractionListener");
-//        }
-//    }
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mListener = (OnInteractionListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnInteractionListener");
+        }
+    }
 
     @Override
     public void onDetach() {
@@ -126,59 +126,81 @@ public class LibraryTabFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        void onClickMoreOptions(int audioId);
     }
 
     private void updateUI() {
-//        List<String> list = new ArrayList<String>();
-//        list.add("item1");
-//        list.add("item2");
-//        list.add("item3");
-//        list.add("item4");
-//
-//        mAdapter = new LibraryAdapter(list);
         List<MusicFile> list = MediaManager.getAllMusicFiles(this.getContext());
         mAdapter = new LibraryAdapter(list);
         mLibraryRecyclerView.setAdapter(mAdapter);
     }
 
-    private class LibraryItemHolder extends RecyclerView.ViewHolder {
-        public TextView mTitle;
-        public TextView mArtistAlbum;
-        public ImageButton mOptions;
-        public LibraryItemHolder(View itemView) {
+    private class LibraryTabItemHolder extends RecyclerView.ViewHolder {
+        private View mMusicFileInfo;
+        private TextView mTitle;
+        private TextView mArtistAlbum;
+        private TextView mDuration;
+        private ImageButton mOptions;
+        private int mAudioId;
+
+        public LibraryTabItemHolder(View itemView) {
             super(itemView);
-            mTitle = (TextView)itemView.findViewById(R.id.library_song_entry_label_title);
-            mArtistAlbum = (TextView) itemView.findViewById(R.id.library_song_entry_label_artist_album);
-            mOptions = (ImageButton) itemView.findViewById(R.id.library_entry_button_more);
+            mMusicFileInfo = itemView.findViewById(R.id.library_list_entry_music_file_info);
+            mTitle = (TextView)itemView.findViewById(R.id.music_file_info_title);
+            mArtistAlbum = (TextView) itemView.findViewById(R.id.music_file_info_artist_album);
+            mDuration = (TextView) itemView.findViewById(R.id.music_file_info_duration);
+            mOptions = (ImageButton) itemView.findViewById(R.id.library_list_entry_button_more);
+            mAudioId = -1;
+            if (mMusicFileInfo == null || mOptions == null) {
+                Log.e(TAG, "RecyclerView item holders layout error");
+            } else {
+                setListeners();
+            }
+        }
+
+        public void bind(MusicFile file) {
+            mTitle.setText(file.getTitle());
+            mArtistAlbum.setText(file.getArtist());
+            mDuration.setText(Utils.millSecondsToTime(file.getDuration()));
+            mAudioId = file.getAudioId();
+        }
+
+        private void setListeners() {
             mOptions.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "more option on click");
+                    Log.d(TAG, "more option on click, AudioId: " + mAudioId);
+                    mListener.onClickMoreOptions(mAudioId);
+                }
+            });
+            mMusicFileInfo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Music file info on click");
                 }
             });
         }
     }
 
-    private class LibraryAdapter extends RecyclerView.Adapter<LibraryItemHolder> {
+    private class LibraryAdapter extends RecyclerView.Adapter<LibraryTabItemHolder> {
         private List<MusicFile> mMusicFiles;
         public LibraryAdapter(List<MusicFile> files) {
             mMusicFiles = files;
         }
 
         @Override
-        public LibraryItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public LibraryTabItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater.inflate(R.layout.library_song_entry, parent, false);
-            return new LibraryItemHolder(view);
+            View view = layoutInflater.inflate(R.layout.library_list_entry, parent, false);
+            return new LibraryTabItemHolder(view);
         }
         @Override
-        public void onBindViewHolder(LibraryItemHolder holder, int position) {
+        public void onBindViewHolder(LibraryTabItemHolder holder, int position) {
             MusicFile file = mMusicFiles.get(position);
-            holder.mTitle.setText(file.getTitle());
-            holder.mArtistAlbum.setText(file.getArtist() + " - " + file.getAlbum());
+            Log.d(TAG, "AudioId : " + file.getAudioId() + " Id: " + file.getId());
+            holder.bind(file);
         }
 
         @Override

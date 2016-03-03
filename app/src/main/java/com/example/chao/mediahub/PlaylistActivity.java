@@ -7,10 +7,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
 
         //get info from intent
         Intent intent = getIntent();
-        String title = intent.getStringExtra(PlaylistsTabFragment.EXTRA_PLAYLIST_NAME);
+        String title = intent.getStringExtra(PlaylistsTabFragment.EXTRA_AGR_PLAYLIST_NAME);
 
         //update toolbar title to playlist name
         toolbar.setTitle(title);
@@ -49,8 +51,8 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
 
         mController = MediaplayerController.newInstance(this);
 
-        mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_PLAYLIST_ID, Playlist.INVALID_ID);
-        if (mPlaylistId == Playlist.INVALID_ID) {
+        mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_AGR_PLAYLIST_ID, Playlist.INVALID_PLAYLIST_ID);
+        if (mPlaylistId == Playlist.INVALID_PLAYLIST_ID) {
             Log.e(TAG, "Invalid Playlist Id");
         } else {
             Log.d(TAG, "Playlist Id : " + mPlaylistId);
@@ -65,6 +67,19 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             fm.beginTransaction().add(R.id.fragment_playlist, mPlaylistFragment).commit();
         }
         showInfoBar();
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        Log.d(TAG, "onOptionsItemSelected(), Id: " + id + " home id: " + android.R.id.home);
+        if (id == android.R.id.home) {
+            // This ID represents the Home or Up button.
+            Log.d(TAG, "navigate up");
+            NavUtils.navigateUpFromSameTask(this);
+            return true;
+        }
+        Log.d(TAG, "onOptionsItemSelected(), Id: " + id);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

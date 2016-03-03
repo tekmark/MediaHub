@@ -33,6 +33,8 @@ public class PlaylistAddMusicActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Cancel on Click");
+                Intent resultIntent = new Intent();
+                setResult(RESULT_CANCELED, resultIntent);
                 finish();
             }
         });
@@ -65,11 +67,12 @@ public class PlaylistAddMusicActivity extends AppCompatActivity {
             mMusicFilesFragment.loadAddedMusicFiles(addedMusicFiles);
             mMusicFilesFragment.reloadMusicFiles(MediaManager.getAllMusicFiles(this));
             List<MusicFile> list = mMusicFilesFragment.getAddedMusicList();
-            String s = "";
-            for (MusicFile f : list) {
-                s += f.getId() + ",";
-            }
-            Log.d(TAG, "current added list " + s);
+//            String s = "";
+//            for (MusicFile f : list) {
+//                s += f.getId() + ",";
+//            }
+//            Log.d(TAG, "current added list " + s);
+            MediaManagerUtils.dumpListMusicFiles(list);
         } else {
             Log.d(TAG, "fragment is null");
         }

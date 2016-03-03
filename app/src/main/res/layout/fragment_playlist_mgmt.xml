@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    tools:context=".PlaylistMgmtFragment">
+    tools:context=".PlaylistOptionsDialog">
     <TextView
         android:id="@+id/playlist_mgmt_playlist_name"
         android:text="playlist name"

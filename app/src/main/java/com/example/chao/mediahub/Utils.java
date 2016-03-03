@@ -1,11 +1,14 @@
 package com.example.chao.mediahub;
 
+import android.util.Log;
+
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by CHAO on 10/26/2015.
  */
-public class Utilities {
+public class Utils {
     static public String millSecondsToTime(long milliseconds) {
         int hour = (int) TimeUnit.MILLISECONDS.toHours(milliseconds);
         milliseconds = milliseconds - TimeUnit.HOURS.toMillis(hour);
@@ -28,4 +31,5 @@ public class Utilities {
         finalTime = finalTime + min + ":" + secondField;
         return finalTime;
     }
+
 }

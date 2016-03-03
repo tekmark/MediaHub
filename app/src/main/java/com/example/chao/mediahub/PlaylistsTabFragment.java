@@ -2,7 +2,6 @@ package com.example.chao.mediahub;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 //import android.app.Fragment;
 import android.support.v4.app.Fragment;
@@ -30,24 +29,24 @@ import java.util.List;
 public class PlaylistsTabFragment extends Fragment {
 
     final static private String TAG = "PlaylistsTabFragment";
-    final static public String EXTRA_PLAYLIST_ID = "PlaylistsTabFragment.PLAYLIST_ID";
-    final static public String EXTRA_PLAYLIST_NAME = "PlaylistsTabFragment.PLAYLIST_NAME";
+    final static public String EXTRA_AGR_PLAYLIST_ID = "PlaylistsTabFragment.PLAYLIST_ID";
+    final static public String EXTRA_AGR_PLAYLIST_NAME = "PlaylistsTabFragment.PLAYLIST_NAME";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
     private OnInteractionListener mListener;
 
-
     private RecyclerView mPlaylistsRecyclerView;
     private PlaylistsAdapter mAdapter;
 
-    private Button mNewPlaylistButton;
+    private Button mBtnNewPlaylist;
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -82,38 +81,40 @@ public class PlaylistsTabFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView()");
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_playlists_tab, container, false);
-        mNewPlaylistButton = (Button) rootView.findViewById(R.id.button_new_playlist);
-        mNewPlaylistButton.setOnClickListener(new View.OnClickListener() {
+        mBtnNewPlaylist = (Button) rootView.findViewById(R.id.button_new_playlist);
+        mBtnNewPlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Create a new playlist");
-                createPlaylist(v);
+                createPlaylist();
             }
         });
         mPlaylistsRecyclerView = (RecyclerView) rootView.findViewById(R.id.playlists_recycler_view);
         mPlaylistsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         updateUI();
         return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+//    TODO: Rename method, update argument and hook method into UI event
 //    public void onButtonPressed(Uri uri) {
 //        if (mListener != null) {
 //            mListener.onFragmentInteraction(uri);
 //        }
 //    }
 
-    public void createPlaylist(View view) {
+    private void createPlaylist() {
         Intent intent = new Intent(getContext(), CreatePlaylistActivity.class);
         startActivity(intent);
-        Log.d(TAG, "Show Playing");
         //overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_no_anim);
     }
 
     @Override
     public void onAttach(Context context) {
+        Log.d(TAG, "onAttach()");
         super.onAttach(context);
         try {
             mListener = (OnInteractionListener) context;
@@ -125,6 +126,7 @@ public class PlaylistsTabFragment extends Fragment {
 
     @Override
     public void onDetach() {
+        Log.d(TAG, "onDetach()");
         super.onDetach();
         mListener = null;
     }
@@ -142,52 +144,61 @@ public class PlaylistsTabFragment extends Fragment {
     public interface OnInteractionListener {
         // TODO: Update argument type and name
 //        void onFragmentInteraction(Uri uri);
-        void onPlaylistOptionsClick(int playlistId);
+        void playlistOptionsOnClick(int playlistId);
+        void playlistOnClick(int playlistId, String playlistName);
     }
 
-    private void updateUI() {
+    public void updateUI() {
+        Log.d(TAG, "update UI");
+//        List<Playlist> list = MediaManager.getAllPlaylists(getActivity().getApplicationContext());
         List<Playlist> list = MediaManager.getAllPlaylists(getContext());
         mAdapter = new PlaylistsAdapter(list);
         mPlaylistsRecyclerView.setAdapter(mAdapter);
+        Log.d(TAG, "UI updated");
     }
 
-    private class PlaylistsItemHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener{
-        //public TextView mTitle;
-        private TextView mPlaylistName;
-        private ImageButton mMoreOptions;
-        private TextView mPlaylistSize;
-        private Playlist mPlaylist;
+    private class PlaylistsItemHolder extends RecyclerView.ViewHolder {
+
+        public TextView mLabelPlaylistName;
+        public TextView mLabelPlaylistSize;
+        public ImageButton mBtnMoreOptions;
+        public Playlist mPlaylist;
 
         public PlaylistsItemHolder(View itemView) {
             super(itemView);
-            //mTitle = (TextView)itemView;
-            mPlaylistName = (TextView) itemView.findViewById(R.id.playlist_name);
-            mPlaylistSize = (TextView) itemView.findViewById(R.id.playlist_number_of_songs);
-            mMoreOptions = (ImageButton) itemView.findViewById(R.id.playlist_more_options);
-            mMoreOptions.setOnClickListener(new View.OnClickListener() {
+
+            mLabelPlaylistName = (TextView) itemView.findViewById(R.id.playlist_info_name);
+            mLabelPlaylistSize = (TextView) itemView.findViewById(R.id.playlist_info_size);
+            mBtnMoreOptions = (ImageButton) itemView.findViewById(R.id.playlist_more_options);
+            mBtnMoreOptions.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "MoreOptions Button onClick(), Playlist ID : " + mPlaylist.getId());
-                    mListener.onPlaylistOptionsClick(mPlaylist.getId());
+                    Log.d(TAG, "onClick() - more options. Playlist Id : " + mPlaylist.getId() +
+                    " Name " + mPlaylist.getName());
+                    mListener.playlistOptionsOnClick(mPlaylist.getId());
                 }
             });
-            itemView.setOnClickListener(this);
+            //itemView.setOnClickListener(this);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "OnClick() - Playlist info. Playlist Id: " + mPlaylist.getId() +
+                            " Name: " + mPlaylist.getName());
+                    mListener.playlistOnClick(mPlaylist.getId(), mPlaylist.getName());
+                }
+            });
         }
 
-        public void bind(Playlist playlist) {
-            mPlaylist = playlist;
-            mPlaylistName.setText(mPlaylist.getName());
-        }
-
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, "PlaylistsItemHolder itemPositionOnClick() is called ");
-            Intent intent = new Intent(getActivity(), PlaylistActivity.class);
-            intent.putExtra(EXTRA_PLAYLIST_ID, mPlaylist.getId());
-            intent.putExtra(EXTRA_PLAYLIST_NAME, mPlaylist.getName());
-            startActivity(intent);
-        }
+//        @Override
+//        public void onClick(View v) {
+//            Log.d(TAG, "OnClick() - Playlist info. Playlist Id: " + mPlaylist.getId() +
+//                    " Name: " + mPlaylist.getName());
+//            Intent intent = new Intent(getActivity(), PlaylistActivity.class);
+//            intent.putExtra(EXTRA_AGR_PLAYLIST_ID, mPlaylist.getId());
+//            intent.putExtra(EXTRA_AGR_PLAYLIST_NAME, mPlaylist.getName());
+//            startActivity(intent);
+//            mPlaylist.playlistOnClick(mPlaylist.getId());
+//        }
     }
 
     private class PlaylistsAdapter extends RecyclerView.Adapter<PlaylistsItemHolder> {
@@ -204,8 +215,11 @@ public class PlaylistsTabFragment extends Fragment {
         @Override
         public void onBindViewHolder(PlaylistsItemHolder holder, int position) {
             Playlist playlist = mPlaylists.get(position);
-            Log.d(TAG, "onBindViewHolder(): name: " + playlist.getName() + " id: " + playlist.getId());
-            holder.bind(playlist);
+            holder.mPlaylist = playlist;
+//            Log.d(TAG, "onBindViewHolder(): name: " + playlist.getName() + " id: " + playlist.getId());
+            String playlistSize = String.valueOf(playlist.getSize());
+            holder.mLabelPlaylistSize.setText(playlistSize);
+            holder.mLabelPlaylistName.setText(playlist.getName());
         }
 
         @Override

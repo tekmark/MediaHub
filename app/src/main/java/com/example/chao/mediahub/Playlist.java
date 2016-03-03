@@ -5,7 +5,7 @@ package com.example.chao.mediahub;
  */
 public class Playlist {
     final static private String DEFAULT_PLAYLIST_NAME = "New Playlist";
-    final static public int INVALID_ID = -1;
+    final static public int INVALID_PLAYLIST_ID = -1;
 
     private String mName;
     private int mId;
@@ -14,10 +14,23 @@ public class Playlist {
     //private int mMediaStoreId;
     public Playlist() {
         mName = DEFAULT_PLAYLIST_NAME;
+        mId = INVALID_PLAYLIST_ID;
+        mSize = -1;
     }
     public Playlist(String name) {
         mName = name;
+        mId = INVALID_PLAYLIST_ID;
+        mSize = -1;
     }
+
+    public Playlist(int playlistId, String playlistName, int playlistSize) {
+        mId = playlistId;
+        mName = playlistName;
+        mSize = playlistSize;
+    }
+
+
+    //copy constructor
     public Playlist(Playlist playlist) {
         mName = playlist.mName;
         mId = playlist.mId;

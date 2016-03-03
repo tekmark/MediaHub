@@ -64,7 +64,7 @@ public class MusicFile implements Parcelable {
     public boolean equals(Object o) {
         //boolean isSame = false;
         if (o != null && o instanceof MusicFile) {
-            if (id == ((MusicFile)o).id){
+            if (audioId == ((MusicFile)o).audioId){
                 return true;
             }
         }
@@ -166,6 +166,16 @@ public class MusicFile implements Parcelable {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public String toString() {
+        String string = "|";
+        for (int i = 0; i < 6; ++i ) {
+            string += get(i);
+            string += "|";
+        }
+        return string;
+    }
+
 
     @Override
     public int describeContents() {

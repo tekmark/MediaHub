@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content">
-    <TextView
-        android:id="@+id/playlist_name"
+    <!--<TextView
+        android:id="@+id/playlist_info_name"
         android:singleLine="true"
         android:textSize="32dp"
         android:text="Playlist"
@@ -25,6 +25,15 @@
         android:layout_toStartOf="@id/playlist_more_options"
         android:layout_alignParentTop="true"
         android:layout_alignBottom="@id/playlist_more_options"/>
+    -->
+    <include android:id="@+id/playlist_info"
+        layout="@layout/playlist_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/playlist_more_options"
+        android:layout_toStartOf="@id/playlist_more_options"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@+id/playlist_more_options"/>
     <ImageButton
         android:id="@id/playlist_more_options"
         android:src="@drawable/more_32"

@@ -331,7 +331,7 @@ public class MediaplayerController {
     public void updateProgressBar() {
         long total = mService.getTotalDuration();
         mProgressBar.setMax((int) total);
-        mTotalDuration.setText(Utilities.millSecondsToTime(total));
+        mTotalDuration.setText(Utils.millSecondsToTime(total));
         mHandler.removeCallbacks(mUpdateTimeTask);
         mHandler.postDelayed(mUpdateTimeTask, DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC);
     }
@@ -341,7 +341,7 @@ public class MediaplayerController {
         public void run() {
             long totalDuration = mService.getTotalDuration();
             long currDuration = mService.getCurrentDuration();
-            mCurrDuration.setText(Utilities.millSecondsToTime(currDuration));
+            mCurrDuration.setText(Utils.millSecondsToTime(currDuration));
             mProgressBar.setProgress((int) currDuration);
 
             //frequency of refreshing progress bar depends on total duration of the audio.

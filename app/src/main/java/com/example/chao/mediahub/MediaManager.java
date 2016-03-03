@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -62,84 +61,66 @@ public class MediaManager {
     }
 
     static public List<MusicFile> getAllMusicFiles(Context context) {
-        Log.d(TAG, "Scan all songs in MediaStore");
-        ArrayList<MusicFile> musicFiles;
+        List<MusicFile> musicFiles = new ArrayList<>();
         ContentResolver musicResolver = context.getContentResolver();
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Log.d(TAG, "Scan all Music Files in MediaStore. Uri: " + musicUri.toString());
+        //TODO: set projection[]
+        String proj[] = {};
+        Cursor cursor = musicResolver.query(musicUri, null, null, null, null);
 
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-        Log.d(TAG, "Query Content Resolver. URI = " + musicUri.toString());
-        if (musicCursor != null && musicCursor.moveToFirst())
-        {
-            // clear list to prevent duplicates
-            musicFiles = new ArrayList<>();
-            //Log.d(TAG, "TITLE | _ID | ARTIST | IS_MUSIC | DURATION");
-            //get columns
-            int titleColumn = musicCursor.getColumnIndex
+        if (cursor != null && cursor.moveToFirst()) {
+            showColumnNames(cursor.getColumnNames());
+
+            int titleColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.TITLE);
-            int idColumn = musicCursor.getColumnIndex
+            int idColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media._ID);
-            int artistColumn = musicCursor.getColumnIndex
+            int artistColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ARTIST);
-            int albumColumn = musicCursor.getColumnIndex
+            int albumColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.ALBUM);
-            int isMusicColumn = musicCursor.getColumnIndex
+            int isMusicColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.IS_MUSIC);
-            int durationColumn = musicCursor.getColumnIndex
+            int durationColumn = cursor.getColumnIndex
                     (android.provider.MediaStore.Audio.Media.DURATION);
-            int pathColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int pathColumn = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+
             Log.d(TAG, "Start to parse MediaStore ");
-            do
-            {
-                String filePath = musicCursor.getString(pathColumn);
+            while (!cursor.isAfterLast()) {
+                String filePath = cursor.getString(pathColumn);
                 // check if the file is a music and the type is supported
-                if (musicCursor.getInt(isMusicColumn) != 0 && filePath != null && musicCursor.getInt(durationColumn) > 0)
-                {
-                    int thisId = musicCursor.getInt(idColumn);
-                    String thisTitle = musicCursor.getString(titleColumn);
-                    String thisArtist = musicCursor.getString(artistColumn);
-                    String thisAlubm = musicCursor.getString(albumColumn);
-                    /*Song song = new Song();
-                    song.setId(thisId);
-                    if(!thisArtist.equals("<unknown>"))
-                    {
-                        song.setArtist(thisArtist);
-                        song.setTitle(thisTitle);
-                    }
-                    else
-                    {
-                        song.setArtist("");
-                        song.setTitle("");
-                    }
-                    song.setSongPath(filePath);
-                    File file = new File(filePath);
-                    song.setFileName(file.getName().substring(0, (file.getName().length() - 4)));*/
-                    //Log.v(TAG, "Found music file : " + filePath);
-                    Log.d(TAG, "ID: " + thisId + " Title: " + thisTitle + " Artist: " + thisArtist +
+                if (cursor.getInt(isMusicColumn) != 0 && filePath != null
+                        && cursor.getInt(durationColumn) > 0) {
+                    int thisId = cursor.getInt(idColumn);
+                    String thisTitle = cursor.getString(titleColumn);
+                    String thisArtist = cursor.getString(artistColumn);
+                    String thisAlubm = cursor.getString(albumColumn);
+                    int thisDuration = cursor.getInt(durationColumn);
+                    Log.d(TAG, "ID: " + thisId + " Title: " + thisTitle + " Duration: " +
+                            Utils.millSecondsToTime(thisDuration) + " Artist: " + thisArtist +
                             "Album : " + thisAlubm + " Path: " + filePath);
                     MusicFile file = new MusicFile();
                     file.setTitle(thisTitle);
                     file.setArtist(thisArtist);
-                    file.setId(thisId);
+                    file.setAudioId(thisId);
                     file.setAlbum(thisAlubm);
+                    file.setDuration(thisDuration);
                     musicFiles.add(file);
                 }
+                cursor.moveToNext();
             }
-            while (musicCursor.moveToNext());
-            Log.d(TAG, "Finish." + musicFiles.size() + " songs added");
-            musicCursor.close();
+            Log.d(TAG, "Finish. # of music files : " + musicFiles.size());
+            cursor.close();
         } else { // if we don't have any media in the folder that we selected set NO MEDIA
-            //addNoSongs();
-            Log.d(TAG, "No songs");
-            //clear list;
-            musicFiles = new ArrayList<MusicFile>();
+            Log.d(TAG, "No music files in MediaStore.");
         }
 
 
-        if (musicFiles.size() == 0)
-        {
+//        if (musicFiles.size() == 0)
+//        {
             //addNoSongs();
-        }
+//        }
 /*
         Collections.sort(musicFiles, new Comparator<Song>() {
             @Override
@@ -236,64 +217,55 @@ public class MediaManager {
         return songsList;
     }
 
-    static public List<Playlist> getAllPlaylists(Context context) {
+    public static List<Playlist> getAllPlaylists(Context context) {
         Log.d(TAG, "Scan all playlists in MediaStore. Playlist_ID | Playlist_NAME | Playlist_SIZE");
-        List<Playlist> playlists = new ArrayList<Playlist>();
+        List<Playlist> playlists = new ArrayList<>();
         String proj [] = {MediaStore.Audio.Playlists._ID, MediaStore.Audio.Playlists.NAME};
         ContentResolver resolver = context.getContentResolver();
         Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
-        Log.d(TAG, "URI = " + uri.toString());
-        Cursor playlistCursor = resolver.query(uri, proj, null, null, null);
-        if (playlistCursor == null) {
+//        Log.d(TAG, "URI = " + uri.toString());
+        Cursor cursor = resolver.query(uri, proj, null, null, null);
+        if (cursor == null) {
             Log.e(TAG, "Query MediaStore failed");
             return playlists;
         } else {
-            String colNames = "";
-            for (String s: playlistCursor.getColumnNames()) {
-                colNames += s;
-                colNames += "|";
-            }
-            Log.d(TAG, "column names: " + colNames);
+
         }
-        int columnCount = playlistCursor.getColumnCount();
-        int rowCount = playlistCursor.getCount();
-        Log.d(TAG, "Found " + rowCount + " records(playlists).");
+
+        int columnCount = cursor.getColumnCount();
+        int rowCount = cursor.getCount();
+        Log.d(TAG, "Query MediaStore, # of records(playlists): " + rowCount);
         if (columnCount > 0) {
-            String columnNames[] = playlistCursor.getColumnNames();
-            int indexes[] = new int[columnCount];
-            int i = 0;
-            for(String colName : columnNames) {
-                indexes[i] = playlistCursor.getColumnIndex(colName);
-                Log.v(TAG, "Column Name: " + colName + " Column Index: " + indexes[i]);
-                ++i;
-            }
-            if (rowCount > 0 && playlistCursor.moveToFirst()) {
-                Log.d(TAG, "Start to read playlist");
-                while (!playlistCursor.isAfterLast()) {
-                    int playlistId = playlistCursor.getInt(indexes[0]);
-                    String playlistName = playlistCursor.getString(indexes[1]);
-                    //int playlistSize = playlistCursor.getInt(indexes[2]);
-                    Playlist playlist = new Playlist(playlistName);
-                    playlist.setId(playlistId);
-                    Log.d(TAG, "Playlist Id : " + playlistId + " Playlist Name : " + playlistName);
+            String columnNames[] = cursor.getColumnNames();
+            //show column names, for debug;
+            showColumnNames(columnNames);
+
+            int playlistIdColIndex = cursor.getColumnIndex(columnNames[0]);
+            int playlistNameColIndex = cursor.getColumnIndex(columnNames[1]);
+            if (rowCount > 0 && cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    int playlistId = cursor.getInt(playlistIdColIndex);
+                    String playlistName = cursor.getString(playlistNameColIndex);
 
                     //TODO: memory cost/efficiency, a new private method might be better.
-                    List<MusicFile> files = getPlaylistMusicFiles(context, playlistId);
-                    playlist.setSize(files.size());
-                    Log.d(TAG, " # of files : " + files.size());
+                    int playlistSize = getPlaylistMusicFiles(context, playlistId).size();
+                    Playlist playlist = new Playlist(playlistId, playlistName, playlistSize);
+                    Log.d(TAG, "Playlist Id : " + playlistId + ", Name : " + playlistName +
+                            ", # of files : " + playlistSize);
+
                     playlists.add(playlist);
-                    playlistCursor.moveToNext();
+                    cursor.moveToNext();
                 }
             }
-            playlistCursor.close();
+            cursor.close();
         } else {
-            Log.e(TAG, " 0 column, check MediaStore");
+            Log.e(TAG, "Error: Get no column from MediaStore.");
         }
         return playlists;
     }
 
     static public List<MusicFile> getPlaylistMusicFiles(Context context, int playlistId) {
-            List<MusicFile> musicFiles = new ArrayList<>();
+        List<MusicFile> musicFiles = new ArrayList<>();
         Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
 
         String[] proj = {
@@ -315,14 +287,15 @@ public class MediaManager {
         int columnCount = musicCursor.getColumnCount();
         int rowCount = musicCursor.getCount();
         Log.d(TAG, "PlaylistID: " + playlistId + ", # of columns: " + columnCount + " ," +
-                " # of records: "  + rowCount);
+                " # of records: " + rowCount);
         if (columnCount > 0) {
             String columnNames[] = musicCursor.getColumnNames();
+            Log.d(TAG, MediaManagerUtils.convertColumnNamesToString(columnNames));
             int indexes[] = new int[columnCount];
             int i = 0;
             for (String name : columnNames) {
                 indexes[i] = musicCursor.getColumnIndex(name);
-                Log.d(TAG, "Column Names: " + name + " Column Index : " + indexes[i]);
+                Log.v(TAG, "Column Names: " + name + " Column Index : " + indexes[i]);
                 ++i;
             }
 
@@ -337,7 +310,6 @@ public class MediaManager {
                     String id = musicCursor.getString(indexes[MusicFile.ID]);
                     String audioId = musicCursor.getString(indexes[MusicFile.AUDIO_ID]);
 
-
                     musicFile.setAudioId(Integer.parseInt(audioId));
                     musicFile.setId(Integer.parseInt(id));
                     musicFile.setDuration(Integer.parseInt(duration));
@@ -347,7 +319,7 @@ public class MediaManager {
                     musicFile.setPath(path);
 
                     //order: audioId, title, artist, album, duration
-                    Log.d(TAG, audioId + "|" + title + "|" + artist + "|" + album + "|" + duration);
+                    Log.d(TAG, audioId + "|" + id + "|" + title + "|" + artist + "|" + album + "|" + duration + "|");
                     Log.d(TAG, "Path: " + path);
 
                     musicFiles.add(musicFile);
@@ -361,30 +333,115 @@ public class MediaManager {
     }
 
     public static int lookupPlaylistId(Context context, String playlistName) {
-
         int playlistId = -1;
-
+        Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        String proj [] = {MediaStore.Audio.Playlists._ID};
+        String filter = MediaStore.Audio.Playlists.NAME+"="+playlistName;
+        ContentResolver resolver = context.getContentResolver();
+        if (resolver != null) {
+            Cursor cursor = resolver.query(uri, proj, filter, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int rowCnt = cursor.getCount();
+                if (rowCnt > 1) {
+                    Log.w(TAG, "given playlist id has multiple entries in MediaStore.");
+                }
+                playlistId = cursor.getInt(0);
+                cursor.close();
+            }
+        }
         return playlistId;
     }
 
-    public static void writePlaylist(Context context, String playlistName,
-                                      List<String> audioIds) {
+    public static String lookupPlaylistName(Context context, int playlistId) {
+        String playlistName = null;
+        Uri uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+        String proj [] = {MediaStore.Audio.Playlists.NAME};
+        String filter = MediaStore.Audio.Playlists._ID+"="+playlistId;
         ContentResolver resolver = context.getContentResolver();
+        if (resolver != null) {
+            Cursor cursor = resolver.query(uri, proj, filter, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int rowCnt = cursor.getCount();
+                if (rowCnt > 1) {
+                    Log.w(TAG, "given playlist id has multiple entries in MediaStore.");
+                }
+                playlistName = cursor.getString(0);
+                cursor.close();
+            }
+        }
 
-        int playlistId = lookupPlaylistId(context, playlistName);
-        int playOrder = 1;
-        Uri uri;
-        if (playlistId == -1) {     //create new playlist
+        return playlistName;
+    }
+
+    public static String generatePlaylistName(Context context) {
+        String playlistName = "New Playlist";
+        int n = 100;
+        for (int i = 0; i < n; ++i) {
+            playlistName += " ";
+            playlistName +=i;
+            if (lookupPlaylistId(context, playlistName) == -1) {
+                return playlistName;
+            }
+        }
+        return playlistName;
+    }
+
+    public static void writePlaylist(Context context, int playlistId, String playlistName,
+                                     List<String> audioIds) {
+        if (playlistName == null) {
+            //generate a new playlist name
+            //TODO: a method to generate a unique playlist name;
+            playlistName = "New Playlist xxx";
+        }
+
+        ContentResolver resolver = context.getContentResolver();
+        Uri uri = null;
+
+        if (playlistId != -1 ) {
+            //check if given playlist id exists in database;
+            uri = MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI;
+            String proj [] = {MediaStore.Audio.Playlists.NAME};
+            String filter = MediaStore.Audio.Playlists._ID+"="+playlistId;
+            Cursor cursor = resolver.query(uri, proj, filter, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int rowCnt = cursor.getCount();
+                if (rowCnt > 1) {
+                    Log.w(TAG, "given playlist id has multiple entries in MediaStore.");
+                }
+                String name = cursor.getString(0);
+                cursor.close();
+                if (name.equals(playlistName)) {
+                    Log.d(TAG, "Playlist name matches playlist name in MediaStore.");
+                    uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+                    resolver.delete(uri, null, null);
+                } else {
+                    ContentValues values = new ContentValues(1);
+                    values.put(MediaStore.Audio.Playlists.NAME, playlistName);
+                    int result = resolver.update(uri, values, filter, null);
+                    if (result == 0) {
+                        Log.e(TAG, "Failed to update playlist name: " + name + "->" + playlistName);
+                    } else if (result == 1) {
+                        Log.i(TAG, "Success. playlist id: " + playlistId + " name: " + name + "->" + playlistName);
+                        uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+                        resolver.delete(uri, null, null);
+                    } else {
+                        Log.w(TAG, "More than one playlists with same playlist id. ");
+                    }
+                }
+            } else {
+                Log.i(TAG, "given playlist id doesn't exist in MediaStore.");
+                playlistId = -1;
+            }
+        }
+
+        if (playlistId == -1) {           //create new playlist
             Log.d(TAG, "Create a new playlist : " + playlistName);
             ContentValues values = new ContentValues(1);
             values.put(MediaStore.Audio.Playlists.NAME, playlistName);
             uri = resolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values);
-
-        } else {                    //update old playlist
-            Log.d(TAG, "update old playlist");
-            uri = null;
         }
 
+        int playOrder = 1;
         if (uri != null) {
             //add songs;
             Log.d(TAG, "# of songs : " + audioIds.size());
@@ -410,6 +467,39 @@ public class MediaManager {
             Log.e(TAG, "URI is null");
         }
     }
+    public static void writePlaylist(Context context, String playlistName,
+                                      List<String> audioIds) {
+        //int playlistId = lookupPlaylistId(context, playlistName);
+        writePlaylist(context, -1, playlistName, audioIds);
+    }
+
+
+    public static boolean addMusicFileToPlaylist(Context context, int audioId, String playlistName) {
+        int playlistId = lookupPlaylistId(context, playlistName);
+        if (playlistId > 0) {
+            return addMusicFileToPlaylist(context, audioId, playlistId);
+        }
+        return false;
+    }
+
+
+    public static boolean addMusicFileToPlaylist(Context context, int audioId, int playlistId) {
+        ContentResolver resolver = context.getContentResolver();
+        int playOrder = 1;
+
+        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+
+        if (playlistId < 0 || uri == null) {
+            return false;
+        } else {        //valid playlist id
+            ContentValues values = new ContentValues(1);
+            values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
+            Log.d(TAG, "Insert AudioId : " + audioId + " to PlaylistId: " + playlistId);
+            resolver.insert(uri, values);
+            return true;
+        }
+    }
+
 
     public static void deletePlaylist(Context context, int playlistId) {
         ContentResolver resolver = context.getContentResolver();
@@ -421,4 +511,14 @@ public class MediaManager {
         String filter = MediaStore.Audio.Playlists._ID + "=" + playlistId;
         resolver.delete(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, filter, null);
     }
+
+    private static void showColumnNames (String [] columns) {
+        String colNames = " | ";
+        for (String s: columns) {
+            colNames += s;
+            colNames += " | ";
+        }
+        Log.d(TAG, colNames);
+    }
+
 }

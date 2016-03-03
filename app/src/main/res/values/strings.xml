@@ -42,5 +42,7 @@
     <string name="delete_playlist">Delete Playlist</string>
     <string name="manage_playlist">Manage Playlist</string>
 
+    <string name="add_to_playlist">Add to Playlist</string>
+
     <string name="playlist_management_options">pop options for playlist management</string>
 </resources>

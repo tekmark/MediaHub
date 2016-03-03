@@ -52,7 +52,6 @@ public class PlaylistAddMusicFragment extends Fragment {
         return fragment;
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -115,7 +114,7 @@ public class PlaylistAddMusicFragment extends Fragment {
 //                }
 //            });
             mTitle = (TextView) itemView.findViewById(R.id.music_file_info_title);
-            mArtist = (TextView) itemView.findViewById(R.id.music_file_info_artist);
+            mArtist = (TextView) itemView.findViewById(R.id.music_file_info_artist_album);
             mDuration = (TextView) itemView.findViewById(R.id.music_file_info_duration);
             mButtonAdd = (Button) itemView.findViewById(R.id.paylist_add_music_button_add);
             if (mTitle == null || mArtist == null || mDuration == null || mButtonAdd == null) {
@@ -144,19 +143,19 @@ public class PlaylistAddMusicFragment extends Fragment {
         }
 
         public void bind(MusicFile file) {
-            Log.d(TAG, "Bind Music File, ID : " + file.getId());
+            Log.d(TAG, "Bind Music File, ID : " + file.getAudioId());
 
             mMusicFile = file;
             mTitle.setText(mMusicFile.getTitle());
             mArtist.setText(mMusicFile.getArtist());
-            mDuration.setText(Utilities.millSecondsToTime(mMusicFile.getDuration()));
+            mDuration.setText(Utils.millSecondsToTime(mMusicFile.getDuration()));
 
             if (mAddedMusicFiles.contains(mMusicFile)) {
-                Log.d(TAG, "Music file (ID : " + mMusicFile.getId() + ") is already added");
+                Log.d(TAG, "Music file (ID : " + mMusicFile.getAudioId() + ") is already added");
                 isAdded = true;
                 mButtonAdd.setText(R.string.added);
             } else {
-                Log.d(TAG, "Music file (ID : " + mMusicFile.getId() + ") is not added");
+                Log.d(TAG, "Music file (ID : " + mMusicFile.getAudioId() + ") is not added");
                 isAdded = false;
                 mButtonAdd.setText(R.string.add);
             }
@@ -190,7 +189,7 @@ public class PlaylistAddMusicFragment extends Fragment {
         @Override
         public void onBindViewHolder(AddMusicListItemHolder holder, int position) {
             MusicFile file = mMusicFiles.get(position);
-            Log.d(TAG, "onBindViewHolder() : " + position + " in " + mMusicFiles.size() + " id : " + file.getId());
+            Log.d(TAG, "onBindViewHolder() : " + position + " in " + mMusicFiles.size() + " id : " + file.getAudioId());
             holder.bind(file);
         }
 

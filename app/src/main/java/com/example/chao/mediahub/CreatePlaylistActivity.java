@@ -2,6 +2,8 @@ package com.example.chao.mediahub;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,7 +17,9 @@ import java.util.List;
 
 public class CreatePlaylistActivity extends AppCompatActivity {
 
-    static final String TAG = "CreatePlaylistActivity";
+    public static final String TAG = "CreatePlaylistActivity";
+
+    private static final int INVALID_PLAYLIST_ID = -1;
 
     static final int PICK_MUSIC_FILES_REQUEST = 1;
 
@@ -32,34 +36,30 @@ public class CreatePlaylistActivity extends AppCompatActivity {
 
     private PlaylistAddMusicFragment mAddMusicFragment;
 
+    private int mPlaylistId;
+    private String mPlaylistName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_playlist);
 
         mCancel = (Button) findViewById(R.id.top_bar_button_cancel);
-        mCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Cancel onClick()");
-                finish();
-            }
-        });
         mDone = (Button) findViewById(R.id.top_bar_button_done);
-        mDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Done onClick()");
-                String name = mEditText.getText().toString();
-                Log.d(TAG, "EditText content : " + name);
-//                showEmptyPlaylistAlertDialog();
-                MediaManager.writePlaylist(getApplicationContext(), name, getAddedMusicFileIds());
-                finish();
-            }
-        });
+        mAddSongs = (Button) findViewById(R.id.create_playlist_button_add);
+        mEditText = (EditText) findViewById(R.id.create_playlist_edittext_name);
+        setListeners();
 
-        int playlistId = getIntent().getIntExtra("playlist_id", -1);
-        Log.d(TAG, "Playlist ID : " + playlistId);
+        mPlaylistId = getIntent().getIntExtra(Tag.AGR_PLAYLIST_ID, INVALID_PLAYLIST_ID);
+        if (mPlaylistId == INVALID_PLAYLIST_ID) {
+            Log.d(TAG, "Create New Playlist Mode");
+            mPlaylistName = "";
+        } else {
+            mPlaylistName = MediaManager.lookupPlaylistName(this, mPlaylistId);
+            Log.d(TAG, "Modify existing Playlist Mode, Id : " + mPlaylistId + " Name: " + mPlaylistName);
+        }
+
+        mEditText.setText(mPlaylistName);
 
         //currentAdded
         if (savedInstanceState != null) {
@@ -70,15 +70,51 @@ public class CreatePlaylistActivity extends AppCompatActivity {
             Log.d(TAG, "No Saved Instance State");
             mMusicFiles = new ArrayList<>();
             mAddedMusicFiles = new ArrayList<>();
-            if (playlistId != -1) {
-                List<MusicFile> list = MediaManager.getPlaylistMusicFiles(getApplicationContext(), playlistId);
-                Log.d(TAG, "playlist id : " + playlistId + " exists. list size : " + list.size());
+            if (mPlaylistId != INVALID_PLAYLIST_ID) {
+                List<MusicFile> list = MediaManager.getPlaylistMusicFiles(getApplicationContext(), mPlaylistId);
+                MediaManagerUtils.dumpListMusicFiles(list);
+                Log.d(TAG, "playlist id : " + mPlaylistId + " exists. list size : " + list.size());
                 mMusicFiles.addAll(list);
                 mAddedMusicFiles.addAll(list);
             }
         }
 
-        mAddSongs = (Button) findViewById(R.id.create_playlist_button_add);
+        //get list;
+        FragmentManager fm = getSupportFragmentManager();
+        mAddMusicFragment = (PlaylistAddMusicFragment)fm.findFragmentById(R.id.fragment_music_file_list);
+        if (mAddMusicFragment != null) {
+            Log.d(TAG, "load current added songs");
+            mAddMusicFragment.loadAddedMusicFiles(mAddedMusicFiles);
+            mAddMusicFragment.reloadMusicFiles(mMusicFiles);
+        } else {
+            Log.e(TAG, "cannot find fragment");
+        }
+    }
+    private void setListeners() {
+        mCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Cancel onClick()");
+                finish();
+            }
+        });
+
+        mDone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Done onClick()");
+                String name = mEditText.getText().toString();
+                Log.d(TAG, "EditText content : " + name);
+//                showEmptyPlaylistAlertDialog();
+                if (mPlaylistId == INVALID_PLAYLIST_ID) {
+                    MediaManager.writePlaylist(CreatePlaylistActivity.this, name, getAddedMusicFileIds());
+                } else {
+                    MediaManager.writePlaylist(CreatePlaylistActivity.this, mPlaylistId, name, getAddedMusicFileIds());
+                }
+                finish();
+            }
+        });
+
         mAddSongs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -89,16 +125,6 @@ public class CreatePlaylistActivity extends AppCompatActivity {
                 startActivityForResult(intent, PICK_MUSIC_FILES_REQUEST);
             }
         });
-        mEditText = (EditText) findViewById(R.id.create_playlist_edittext_name);
-
-        mAddMusicFragment = (PlaylistAddMusicFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_music_file_list);
-        if (mAddMusicFragment == null) {
-            Log.e(TAG, "cannot find fragment");
-        } else {
-            Log.d(TAG, "load current added songs");
-            mAddMusicFragment.loadAddedMusicFiles(mAddedMusicFiles);
-            mAddMusicFragment.reloadMusicFiles(mMusicFiles);
-        }
     }
 
     @Override
@@ -131,8 +157,10 @@ public class CreatePlaylistActivity extends AppCompatActivity {
                 } else {
                     Log.e(TAG, "No added music file");
                 }
+            } else if (resultCode == RESULT_CANCELED) {
+                Log.i(TAG, "RESULT_CANCELED");
             } else {
-                Log.e(TAG, "not RESULT_OK");
+                Log.e(TAG, "Unsupported result code");
             }
         } else {
             Log.e(TAG, "Unsupported Request Code");
@@ -150,8 +178,8 @@ public class CreatePlaylistActivity extends AppCompatActivity {
 
     private List<String> getAddedMusicFileIds() {
         List<String> ids = new ArrayList<>();
-        for (MusicFile file : mAddedMusicFiles) {
-            String id = Integer.toString(file.getId());
+        for (MusicFile file : mAddMusicFragment.getAddedMusicList()) {
+            String id = Integer.toString(file.getAudioId());
             ids.add(id);
         }
         return ids;
@@ -184,5 +212,4 @@ public class CreatePlaylistActivity extends AppCompatActivity {
 
         dialog.show();
     }
-
 }

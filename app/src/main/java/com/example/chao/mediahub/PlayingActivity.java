@@ -113,11 +113,12 @@ public class PlayingActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+//        Log.d(TAG, "onOptionsItemSelected");
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         } else if (id == android.R.id.home) {
+//            Log.d(TAG, "HOME");
             finish();
             return true;
         }
