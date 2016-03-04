@@ -27,16 +27,15 @@ public class AddToPlaylistDialog extends Fragment {
     private static final String TAG = "AddToPlaylistDialog";
 
     //parameter arguments
-    private int mAudioId = -1;
-//    private static final String ARG_AUDIO_ID = "ArgAudioId";
     private static final String ARG_AUDIO_ID = Tags.Arguments.AGR_AUDIO_ID;
 
-    private OnInteractionListener mListener;
+    private int mAudioId = MusicFile.INVALID_ID;
 
     private Button mBtnNewPlaylist;
     private Button mBtnCancel;
 
-    @SuppressWarnings("unused")
+    private OnInteractionListener mListener;
+
     public static AddToPlaylistDialog newInstance(int audioId) {
         AddToPlaylistDialog fragment = new AddToPlaylistDialog();
         Bundle args = new Bundle();
@@ -68,14 +67,14 @@ public class AddToPlaylistDialog extends Fragment {
         mBtnCancel = (Button) rootView.findViewById(R.id.button_cancel);
 
         View view = rootView.findViewById(R.id.list);
-        Log.d(TAG, "onCreateView");
+//        Log.d(TAG, "onCreateView");
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             List<Playlist> playlists = MediaManager.getAllPlaylists(context);
-//            mListener = new OnInteractionListener();
+
             AddToPlaylistRecyclerViewAdapter adapter = new AddToPlaylistRecyclerViewAdapter(playlists, mAudioId, mListener);
             recyclerView.setAdapter(adapter);
         } else {
@@ -114,25 +113,17 @@ public class AddToPlaylistDialog extends Fragment {
      */
     public interface OnInteractionListener {
         // TODO: Update argument type and name
-        //void onListFragmentInteraction(DummyItem item);
-//        void onClickPlaylist(Playlist playlist) {
-//            Log.d(TAG, "OnClickPlaylist(), playlist Id: " + playlist.getId());
-//            showComfirmDialog(playlist);
-//        }
-
         void playlistOnSelect(int audioId, Playlist playlist);
-
-    }
-
-    public void showDialog(FragmentManager fragmentManager, String tag) {
-        FragmentTransaction ft = fragmentManager.beginTransaction();
-        ft.add(R.id.main_content, this, TAG);
-        ft.commit();
     }
 
     public void removeDialog(FragmentManager fragmentManager, String tag) {
-        Log.d(TAG, "remove dialog input tag: " + tag);
         FragmentTransaction ft = fragmentManager.beginTransaction();
+        ft.remove(this);
+        ft.commit();
+    }
+    public void removeThisDialog() {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
         ft.remove(this);
         ft.commit();
     }
@@ -142,7 +133,8 @@ public class AddToPlaylistDialog extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "BtnCancelOnClick()");
-                removeDialog(getActivity().getSupportFragmentManager(), TAG);
+//                removeDialog(getActivity().getSupportFragmentManager(), TAG);
+            removeThisDialog();
             }
         });
         mBtnNewPlaylist.setOnClickListener(new View.OnClickListener() {

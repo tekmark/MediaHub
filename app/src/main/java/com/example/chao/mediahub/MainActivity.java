@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity
                 } else if (position == LIBRARY_TAB_POSITION) {
                     Fragment fragment = getSupportFragmentManager().findFragmentByTag(TAG_PLAYLIST_OPTIONS_FRAGMENT);
                     if (fragment != null) {
-                        onFragmentClose();
+                        //onFragmentClose();
                     }
                 } else {
 
@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity
 
         MediaManager.scan(getApplicationContext(), null);
         //MediaManager.getAllMusicFiles(getApplicationContext());
-
     }
 
     @Override
@@ -145,6 +144,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onPause() {
+        removeDialogByTag(Tags.Fragments.DIALOG_PLAYLIST_OPTIONS, 0);
+        removeDialogByTag(Tags.Fragments.DIALOG_MUSIC_FILE_OPTIONS, 0);
+        super.onPause();
+    }
+
+    @Override
     public void onStop() {
         Log.d(TAG, "onStop()");
         super.onStop();
@@ -165,9 +171,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "onDestroy()");
         super.onDestroy();
     }
-
-
-
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -183,22 +187,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    void showDialog() {
-        Log.d(TAG, "show dialog");
-        AddToPlaylistDialog dialog = AddToPlaylistDialog.newInstance(1);
-        dialog.showDialog(getSupportFragmentManager(), "ADD_TO_PLAYLIST");
-//        dialog.show(getSupportFragmentManager(), "ADD TO PLAYLIST");
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        ft.add(R.id.main_content, dialog, "TAG");
-//        ft.commit();
-    }
-
-//    private void showPlaylistMgmtDialog() {
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        Fragment dialog = PlaylistOptionsDialog.newInstance("", "");
-//        ft.add(R.id.main_content, dialog, "OptionsFragment");
-//        ft.commit();
-//    }
     @Override
     public void playlistOnClick(int playlistId, String playlistName) {
         Intent intent = new Intent(this, PlaylistActivity.class);
@@ -234,45 +222,22 @@ public class MainActivity extends AppCompatActivity
     public void playlistOptionsOnClick(int playlistId) {
         Log.d(TAG, "Interaction, playlist id : " + playlistId);
         PlaylistOptionsDialog dialog = (PlaylistOptionsDialog) getSupportFragmentManager()
-                .findFragmentByTag("PlaylistOptionsDialog");
+                .findFragmentByTag(Tags.Fragments.DIALOG_PLAYLIST_OPTIONS);
         if (dialog == null) {
             dialog = PlaylistOptionsDialog.newInstance(playlistId);
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.setCustomAnimations(R.anim.slide_in_up, 0);
-            ft.add(R.id.main_content, dialog, "PlaylistOptionsDialog" );
-            ft.commit();
+            addDialog(dialog, Tags.Fragments.DIALOG_PLAYLIST_OPTIONS, R.anim.slide_in_up);
         } else {
-            int currentId = dialog.getCurrentPlaylistId();
-            Log.d(TAG, "Dialog exists. Current playlist Id: " + currentId);
-            if (currentId != playlistId) {
-                dialog.updatePlaylistId(playlistId);
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.setCustomAnimations(0, R.anim.slide_out_down);
-                ft.hide(dialog);
-                ft.commit();
-                ft = getSupportFragmentManager().beginTransaction();
-                ft.setCustomAnimations(R.anim.slide_in_up, 0);
-                ft.show(dialog);
-                ft.commit();
+            if (dialog.isHidden()) {
+                Log.d(TAG, "Dialog exists, but hidden");
+                showDialog(dialog, R.anim.slide_in_up);
+            } else {
+                int currentId = dialog.getCurrentPlaylistId();
+                if (currentId != playlistId) {
+                    hideDialog(dialog, R.anim.slide_out_down);
+                    dialog.updatePlaylistId(playlistId);
+                    showDialog(dialog, R.anim.slide_in_up);
+                }
             }
-        }
-    }
-
-    @Override
-    public void onFragmentClose() {
-        Log.d(TAG, "onFragmentClose");
-//        Fragment options = getSupportFragmentManager().findFragmentByTag(TAG_PLAYLIST_OPTIONS_FRAGMENT);
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        ft.remove(options);
-//        ft.commit();
-    }
-
-    @Override
-    public void onPlaylistDelete() {
-        if (mPlaylistTab == null) {
-            Log.e(TAG, "Playlist Tab is null");
-        } else {
-            mPlaylistTab.updateUI();
         }
     }
 
@@ -288,14 +253,7 @@ public class MainActivity extends AppCompatActivity
                 // User clicked OK button
                 Log.d(TAG, "OK");
                 MediaManager.deletePlaylist(MainActivity.this, playlistId);
-                Fragment fragment = getSupportFragmentManager().findFragmentByTag("PlaylistOptionsDialog");
-                if (fragment != null) {
-                    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                    ft.hide(fragment);
-                    ft.commit();
-                } else {
-                    Log.e(TAG, "ERROR! ");
-                }
+                hideDialogByTag(Tags.Fragments.DIALOG_PLAYLIST_OPTIONS, R.anim.slide_out_down);
                 mPlaylistTab.updateUI();
             }
         });
@@ -309,38 +267,6 @@ public class MainActivity extends AppCompatActivity
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
-
-    private void updatePlaylistOptionsFragment (int playlistId) {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment fragment = fm.findFragmentByTag(TAG_PLAYLIST_OPTIONS_FRAGMENT);
-
-        if (fragment != null) {
-//            ft.setCustomAnimations(R.anim.slide_out_no_anim, R.anim.slide_out_down);
-            ft.remove(fragment);
-        }
-
-        fragment = PlaylistOptionsDialog.newInstance(playlistId);
-//        ft.setCustomAnimations(R.anim.slide_in_up, 0);
-        ft.add(R.id.main_content, fragment, TAG_PLAYLIST_OPTIONS_FRAGMENT);
-        ft.commit();
-    };
-
-//    @Override
-//    public void onClickMoreOptions(int audioId) {
-//        FragmentManager fm = getSupportFragmentManager();
-//        FragmentTransaction ft = fm.beginTransaction();
-//        Fragment fragment = fm.findFragmentByTag(TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
-//
-//        if (fragment != null) {
-//            ft.remove(fragment);
-//        }
-//        Log.d(TAG, "audioId: " + audioId);
-//        fragment = MusicFileOptionsDialog.newInstance(audioId);
-//        ft.add(R.id.main_content, fragment, TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
-//        ft.commit();
-//}
 
     @Override
     public void musicfileOnClick(int audioId) {
@@ -389,6 +315,17 @@ public class MainActivity extends AppCompatActivity
         ft.add(R.id.main_content, dialog, tag);
         ft.commit();
         Log.d(TAG, "Add dialog with tag: " + tag);
+    }
+
+    private void removeDialogByTag(String tag, int animEnter) {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment dialog = fm.findFragmentByTag(tag);
+        if (dialog != null) {
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.remove(dialog);
+            ft.commit();
+            Log.d(TAG, "Dialog Tag: " + tag + " -> remove");
+        }
     }
 
     @Override

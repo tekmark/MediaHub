@@ -16,5 +16,6 @@ public class Tags {
     public class Fragments {
         public static final String DIALOG_MUSIC_FILE_OPTIONS = "TagDialogMusicFileOptions";
         public static final String DIALOG_ADD_TO_PLAYLIST = "TagDialogAddToPlaylist";
+        public static final String DIALOG_PLAYLIST_OPTIONS = "TagDialogPlaylistOptions";
     }
 }

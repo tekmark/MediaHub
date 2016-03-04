@@ -27,7 +27,7 @@ public class PlaylistOptionsDialog extends Fragment {
     final static private String TAG = "PlaylistOptionsDialog";
 
     // the fragment initialization parameters
-    private static final String ARG_PLAYLIST_ID = "AgrPlaylistId";
+    private static final String ARG_PLAYLIST_ID = Tags.Arguments.AGR_PLAYLIST_ID;
     //parameters
     private int mPlaylistId;
 
@@ -43,11 +43,8 @@ public class PlaylistOptionsDialog extends Fragment {
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * Create a new instance of fragment PlaylistOptionsDialog.
+     * @param playlistId playlistId of the selected item.
      * @return A new instance of fragment PlaylistOptionsDialog.
      */
     // TODO: Rename and change types and number of parameters
@@ -64,7 +61,7 @@ public class PlaylistOptionsDialog extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mPlaylistId = getArguments().getInt(ARG_PLAYLIST_ID);
-            Log.d(TAG,  "Parameter " + ARG_PLAYLIST_ID + " = " + mPlaylistId);
+//            Log.d(TAG,  "Parameter " + ARG_PLAYLIST_ID + " = " + mPlaylistId);
         }
     }
 
@@ -78,7 +75,11 @@ public class PlaylistOptionsDialog extends Fragment {
         mBtnDelete = (Button) rootView.findViewById(R.id.playlist_mgmt_button_delete);
         mBtnCancel = (Button) rootView.findViewById(R.id.button_cancel);
         mBtnSticky = (Button) rootView.findViewById(R.id.playlist_mgmt_button_sticky);
-        setListeners();
+
+        //set button's listeners.
+        if (mBtnCancel != null && mBtnDelete != null && mBtnCancel != null && mBtnSticky != null) {
+            setListeners();
+        }
         return rootView;
     }
 
@@ -116,7 +117,6 @@ public class PlaylistOptionsDialog extends Fragment {
     public void updatePlaylistId(int playlistId) {
         mPlaylistId = playlistId;
     }
-
     public int getCurrentPlaylistId() {
         return mPlaylistId;
     }
@@ -132,19 +132,19 @@ public class PlaylistOptionsDialog extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentClose();
-//        void onDeleteDialog();
-        void onPlaylistDelete();
         void onPlaylistDelete(int playlistId);
+        void onDialogClose(String tag);
     }
 
     private void setListeners() {
         mBtnModify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onFragmentClose();
                 Log.d(TAG, "Modify Button onClick()");
+                //close this dialog.
+                String myTag = PlaylistOptionsDialog.this.getTag();
+                mListener.onDialogClose(myTag);
+                //start CreatePlaylistActivity, and pass mPlaylistId to it.
                 Intent intent = new Intent(getContext(), CreatePlaylistActivity.class);
                 intent.putExtra(Tags.AGR_PLAYLIST_ID, mPlaylistId);
                 startActivity(intent);
@@ -155,8 +155,8 @@ public class PlaylistOptionsDialog extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Cancel Button onClick()");
-                //mListener.onFragmentClose();
-                removeDialog(getFragmentManager());
+                String myTag = PlaylistOptionsDialog.this.getTag();
+                mListener.onDialogClose(myTag);
             }
         });
 
@@ -171,15 +171,11 @@ public class PlaylistOptionsDialog extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Delete Button onClick(), mPlaylistId : " + mPlaylistId);
-                //mListener.onDeleteDialog();
-//                MediaManager.deletePlaylist(getContext(), mPlaylistId);
-//                deletePlaylist();
-                //onDeleteDialog();
                 mListener.onPlaylistDelete(mPlaylistId);
             }
         });
     }
-
+/*
     public void showDialog(FragmentManager fragmentManager) {
         FragmentTransaction ft = fragmentManager.beginTransaction();
         ft.add(R.id.main_content, this, TAG);
@@ -195,5 +191,5 @@ public class PlaylistOptionsDialog extends Fragment {
 
     public void deletePlaylist() {
         MediaManager.deletePlaylist(getContext(), mPlaylistId);
-    }
+    }*/
 }

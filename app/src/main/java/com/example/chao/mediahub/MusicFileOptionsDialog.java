@@ -21,19 +21,13 @@ import android.widget.Button;
 public class MusicFileOptionsDialog extends Fragment {
 
     private static final String TAG = "MusicFileOptionsFrag";
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String AGR_AUDIO_ID = Tags.Arguments.AGR_AUDIO_ID;
+    private int mAudioId;
 
     private Button mBtnAddToPlaylist;
     private Button mBtnCancel;
-
-    private int mAudioId;
 
     private OnInteractionListener mListener;
 
@@ -45,24 +39,13 @@ public class MusicFileOptionsDialog extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param audioId audio id of the selected item.
      * @return A new instance of fragment MusicFileOptionsDialog.
      */
-    // TODO: Rename and change types and number of parameters
-//    public static MusicFileOptionsDialog newInstance(String param1, String param2) {
-//        MusicFileOptionsDialog fragment = new MusicFileOptionsDialog();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-
     public static MusicFileOptionsDialog newInstance(int audioId) {
         MusicFileOptionsDialog fragment = new MusicFileOptionsDialog();
         Bundle args = new Bundle();
-        args.putInt(Tags.Arguments.AGR_AUDIO_ID, audioId);
+        args.putInt(AGR_AUDIO_ID, audioId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,11 +54,6 @@ public class MusicFileOptionsDialog extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            if (mParam1 != null) {
-//                mAudioId = Integer.parseInt(mParam1);
-//            }
-//            mParam2 = getArguments().getString(ARG_PARAM2);
             mAudioId = getArguments().getInt(Tags.Arguments.AGR_AUDIO_ID);
         }
     }
@@ -90,13 +68,6 @@ public class MusicFileOptionsDialog extends Fragment {
         setListeners();
         return rootView;
     }
-
-    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
 
     @Override
     public void onAttach(Context context) {
@@ -120,6 +91,7 @@ public class MusicFileOptionsDialog extends Fragment {
     }
 
     public void updateAudioId(int audioId) {
+        Log.d(TAG, "Update Audio Id: " + mAudioId + " -> " + audioId);
         mAudioId = audioId;
     }
 
@@ -134,13 +106,9 @@ public class MusicFileOptionsDialog extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnInteractionListener {
-        // TODO: Update argument type and name
-//        void onFragmentInteraction(Uri uri);
         void onDialogClose(String Tag);
         void onMusicFileOptionsAddToPlaylist(int audioId);
     }
-
-
 
     private void setListeners() {
         mBtnCancel.setOnClickListener(new View.OnClickListener() {
