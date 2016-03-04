@@ -19,14 +19,12 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import java.util.List;
-import java.util.Objects;
-
 public class MainActivity extends AppCompatActivity
         implements PlaylistsTabFragment.OnInteractionListener,
         PlaylistOptionsDialog.OnInteractionListener,
         LibraryTabFragment.OnInteractionListener,
-        MusicFileOptionsFragment.OnInteractionListener {
+        MusicFileOptionsDialog.OnInteractionListener,
+        AddToPlaylistDialog.OnInteractionListener {
 
     final private static String TAG = "MainActivity";
 
@@ -39,7 +37,7 @@ public class MainActivity extends AppCompatActivity
     final private static String PLAYLISTS_TAB_TITLE = "Playlists";
 
     final private static String TAG_PLAYLIST_OPTIONS_FRAGMENT = "PlaylistOptionsDialog";
-    private static final String TAG_MUSIC_FILE_OPTIONS_FRAGMENT = "MusicFileOptionsFragment";
+    private static final String TAG_MUSIC_FILE_OPTIONS_FRAGMENT = "MusicFileOptionsDialog";
 
     private static final String STATE_CURRENT_TAB_POSITION = "StateCurrentTabPosition";
 
@@ -169,6 +167,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -207,6 +206,30 @@ public class MainActivity extends AppCompatActivity
         intent.putExtra(EXTRA_AGR_PLAYLIST_NAME, playlistName);
         startActivity(intent);
     }
+
+    @Override
+    public void musicfileOptionsOnClick(int audioId) {
+        Log.d(TAG, "Iteraction, audio id : " + audioId);
+        MusicFileOptionsDialog dialog = (MusicFileOptionsDialog) getSupportFragmentManager()
+                .findFragmentByTag(Tags.Fragments.DIALOG_MUSIC_FILE_OPTIONS);
+        if (dialog == null) {
+            dialog = MusicFileOptionsDialog.newInstance(audioId);
+            addDialog(dialog, Tags.Fragments.DIALOG_MUSIC_FILE_OPTIONS, R.anim.slide_in_up);
+        } else {
+            if (dialog.isHidden()) {
+                Log.d(TAG, "Dialog exists, but hidden");
+                showDialog(dialog, R.anim.slide_in_up);
+            } else {
+                int currentId = dialog.getCurrentAudioId();
+                if (currentId != audioId) {
+                    hideDialog(dialog, R.anim.slide_out_down);
+                    dialog.updateAudioId(audioId);
+                    showDialog(dialog, R.anim.slide_in_up);
+                }
+            }
+        }
+    }
+
     @Override
     public void playlistOptionsOnClick(int playlistId) {
         Log.d(TAG, "Interaction, playlist id : " + playlistId);
@@ -304,40 +327,110 @@ public class MainActivity extends AppCompatActivity
         ft.commit();
     };
 
-    @Override
-    public void onClickMoreOptions(int audioId) {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment fragment = fm.findFragmentByTag(TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
+//    @Override
+//    public void onClickMoreOptions(int audioId) {
+//        FragmentManager fm = getSupportFragmentManager();
+//        FragmentTransaction ft = fm.beginTransaction();
+//        Fragment fragment = fm.findFragmentByTag(TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
+//
+//        if (fragment != null) {
+//            ft.remove(fragment);
+//        }
+//        Log.d(TAG, "audioId: " + audioId);
+//        fragment = MusicFileOptionsDialog.newInstance(audioId);
+//        ft.add(R.id.main_content, fragment, TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
+//        ft.commit();
+//}
 
-        if (fragment != null) {
-            ft.remove(fragment);
-        }
-        Log.d(TAG, "audioId: " + audioId);
-        fragment = MusicFileOptionsFragment.newInstance(Integer.toString(audioId), "");
-        ft.add(R.id.main_content, fragment, TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
-        ft.commit();
-}
+    @Override
+    public void musicfileOnClick(int audioId) {
+        Log.d(TAG, "Music file on Click");
+    }
 
     @Override
-    public void onMusicFileOptionsClose() {
-        Fragment options = getSupportFragmentManager().findFragmentByTag(TAG_MUSIC_FILE_OPTIONS_FRAGMENT);
+    public void onDialogClose(String tag) {
+        hideDialogByTag(tag, R.anim.slide_out_down);
+    }
+
+    private void hideDialog(Fragment dialog, int animExit) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.remove(options);
+        ft.setCustomAnimations(0, animExit);
+        ft.hide(dialog);
         ft.commit();
+        Log.d(TAG, "Dialog Tag : " + dialog.getTag() + " -> hide");
+    }
+
+    private void hideDialogByTag(String tag, int animExit) {
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment dialog = fm.findFragmentByTag(tag);
+        if (dialog != null) {
+            hideDialog(dialog, animExit);
+        } else {
+            Log.w(TAG, "hideDialogByTag() - no fragment with tag: " + tag);
+        }
+    }
+
+    private void showDialog(Fragment dialog, int animEnter) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(animEnter, 0);
+        ft.show(dialog);
+        ft.commit();
+        Log.d(TAG, "Dialog Tag : " + dialog.getTag() + " -> show");
+    }
+
+    private void showDialogByTag(String tag, int anim) {
+        Fragment dialog = getSupportFragmentManager().findFragmentByTag(tag);
+        showDialog(dialog, 0);
+    }
+
+    private void addDialog(Fragment dialog, String tag, int animEnter) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(animEnter, 0);
+        ft.add(R.id.main_content, dialog, tag);
+        ft.commit();
+        Log.d(TAG, "Add dialog with tag: " + tag);
     }
 
     @Override
     public void onMusicFileOptionsAddToPlaylist(int audioId) {
-        showDialog();
-//        Log.d(TAG, "show dialog");
-//        Fragment fragment = AddToPlaylistDialog.newInstance(1);
-//
-//        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-//        ft.add(R.id.main_content, fragment, "TAG");
-//        ft.commit();
-//        DialogFragment dialog = AddToPlaylistDialog.newInstance(1);
-//        dialog.show(getSupportFragmentManager(), "ADD_TO_PLAYLIST");
+        //hide options dialog;
+        hideDialogByTag(Tags.Fragments.DIALOG_MUSIC_FILE_OPTIONS, 0);
+        //show add_to_playlist dialog
+        AddToPlaylistDialog dialog = AddToPlaylistDialog.newInstance(audioId);
+        addDialog(dialog, Tags.Fragments.DIALOG_ADD_TO_PLAYLIST, R.anim.slide_in_up);
+    }
+
+    @Override
+    public void playlistOnSelect(final int audioId, final Playlist playlist) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("confirm ?").setTitle("empty");
+
+        // Add the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                Log.d(TAG, "OK, playlistId: " + playlist.getId() + " audioId: " + audioId);
+                MediaManager.addMusicFileToPlaylist(MainActivity.this, audioId, playlist.getId());
+                //remove dialog
+                FragmentManager fm = getSupportFragmentManager();
+                FragmentTransaction ft = fm.beginTransaction();
+                Fragment fragment = fm.findFragmentByTag(Tags.Fragments.DIALOG_ADD_TO_PLAYLIST);
+                ft.remove(fragment);
+                ft.commit();
+                //update playlist tab fragment
+                mPlaylistTab.updateUI();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                Log.d(TAG, "Cancel");
+            }
+        });
+
+        // 3. Get the AlertDialog from create()
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     /**

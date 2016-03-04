@@ -1,7 +1,6 @@
 package com.example.chao.mediahub;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,10 +15,10 @@ import android.widget.Button;
  * Activities that contain this fragment must implement the
  * {@link OnInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MusicFileOptionsFragment#newInstance} factory method to
+ * Use the {@link MusicFileOptionsDialog#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MusicFileOptionsFragment extends Fragment {
+public class MusicFileOptionsDialog extends Fragment {
 
     private static final String TAG = "MusicFileOptionsFrag";
     // TODO: Rename parameter arguments, choose names that match
@@ -38,7 +37,7 @@ public class MusicFileOptionsFragment extends Fragment {
 
     private OnInteractionListener mListener;
 
-    public MusicFileOptionsFragment() {
+    public MusicFileOptionsDialog() {
         // Required empty public constructor
     }
 
@@ -48,14 +47,22 @@ public class MusicFileOptionsFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment MusicFileOptionsFragment.
+     * @return A new instance of fragment MusicFileOptionsDialog.
      */
     // TODO: Rename and change types and number of parameters
-    public static MusicFileOptionsFragment newInstance(String param1, String param2) {
-        MusicFileOptionsFragment fragment = new MusicFileOptionsFragment();
+//    public static MusicFileOptionsDialog newInstance(String param1, String param2) {
+//        MusicFileOptionsDialog fragment = new MusicFileOptionsDialog();
+//        Bundle args = new Bundle();
+//        args.putString(ARG_PARAM1, param1);
+//        args.putString(ARG_PARAM2, param2);
+//        fragment.setArguments(args);
+//        return fragment;
+//    }
+
+    public static MusicFileOptionsDialog newInstance(int audioId) {
+        MusicFileOptionsDialog fragment = new MusicFileOptionsDialog();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(Tags.Arguments.AGR_AUDIO_ID, audioId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -64,11 +71,12 @@ public class MusicFileOptionsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            if (mParam1 != null) {
-                mAudioId = Integer.parseInt(mParam1);
-            }
-            mParam2 = getArguments().getString(ARG_PARAM2);
+//            mParam1 = getArguments().getString(ARG_PARAM1);
+//            if (mParam1 != null) {
+//                mAudioId = Integer.parseInt(mParam1);
+//            }
+//            mParam2 = getArguments().getString(ARG_PARAM2);
+            mAudioId = getArguments().getInt(Tags.Arguments.AGR_AUDIO_ID);
         }
     }
 
@@ -107,6 +115,14 @@ public class MusicFileOptionsFragment extends Fragment {
         mListener = null;
     }
 
+    public int getCurrentAudioId() {
+        return mAudioId;
+    }
+
+    public void updateAudioId(int audioId) {
+        mAudioId = audioId;
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -120,22 +136,25 @@ public class MusicFileOptionsFragment extends Fragment {
     public interface OnInteractionListener {
         // TODO: Update argument type and name
 //        void onFragmentInteraction(Uri uri);
-        void onMusicFileOptionsClose ();
+        void onDialogClose(String Tag);
         void onMusicFileOptionsAddToPlaylist(int audioId);
     }
+
+
 
     private void setListeners() {
         mBtnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onMusicFileOptionsClose();
+                String tag = MusicFileOptionsDialog.this.getTag();
+                mListener.onDialogClose(tag);
             }
         });
 
         mBtnAddToPlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Button AddToPlaylist onClick()");
+                Log.d(TAG, "Button AddToPlaylist onClick(), mAudioId : " + mAudioId);
                 mListener.onMusicFileOptionsAddToPlaylist(mAudioId);
             }
         });

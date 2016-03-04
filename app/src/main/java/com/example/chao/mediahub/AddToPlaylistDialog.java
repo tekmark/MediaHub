@@ -1,14 +1,12 @@
 package com.example.chao.mediahub;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -30,7 +28,8 @@ public class AddToPlaylistDialog extends Fragment {
 
     //parameter arguments
     private int mAudioId = -1;
-    private static final String ARG_AUDIO_ID = "ArgAudioId";
+//    private static final String ARG_AUDIO_ID = "ArgAudioId";
+    private static final String ARG_AUDIO_ID = Tags.Arguments.AGR_AUDIO_ID;
 
     private OnInteractionListener mListener;
 
@@ -69,15 +68,15 @@ public class AddToPlaylistDialog extends Fragment {
         mBtnCancel = (Button) rootView.findViewById(R.id.button_cancel);
 
         View view = rootView.findViewById(R.id.list);
-
+        Log.d(TAG, "onCreateView");
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             List<Playlist> playlists = MediaManager.getAllPlaylists(context);
-            mListener = new OnInteractionListener();
-            AddToPlaylistRecyclerViewAdapter adapter = new AddToPlaylistRecyclerViewAdapter(playlists, mListener);
+//            mListener = new OnInteractionListener();
+            AddToPlaylistRecyclerViewAdapter adapter = new AddToPlaylistRecyclerViewAdapter(playlists, mAudioId, mListener);
             recyclerView.setAdapter(adapter);
         } else {
             Log.e(TAG, "Cannot get RecyclerView");
@@ -89,12 +88,12 @@ public class AddToPlaylistDialog extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        /*if (context instanceof OnInteractionListener) {
+        if (context instanceof OnInteractionListener) {
             mListener = (OnInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnInteractionListener");
-        }*/
+        }
     }
 
     @Override
@@ -113,13 +112,16 @@ public class AddToPlaylistDialog extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public class OnInteractionListener {
+    public interface OnInteractionListener {
         // TODO: Update argument type and name
         //void onListFragmentInteraction(DummyItem item);
-        void onClickPlaylist(Playlist playlist) {
-            Log.d(TAG, "OnClickPlaylist(), playlist Id: " + playlist.getId());
-            showComfirmDialog(playlist);
-        }
+//        void onClickPlaylist(Playlist playlist) {
+//            Log.d(TAG, "OnClickPlaylist(), playlist Id: " + playlist.getId());
+//            showComfirmDialog(playlist);
+//        }
+
+        void playlistOnSelect(int audioId, Playlist playlist);
+
     }
 
     public void showDialog(FragmentManager fragmentManager, String tag) {
@@ -152,31 +154,5 @@ public class AddToPlaylistDialog extends Fragment {
                 startActivity(intent);
             }
         });
-    }
-
-    public void showComfirmDialog(final Playlist playlist) {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        builder.setMessage("confirm ?").setTitle("empty");
-
-        // Add the buttons
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User clicked OK button
-                Log.d(TAG, "OK, playlistId: " + playlist.getId() + " audioId: " + mAudioId);
-                MediaManager.addMusicFileToPlaylist(getContext(), mAudioId, playlist.getId());
-            }
-        });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // User cancelled the dialog
-                Log.d(TAG, "Cancel");
-            }
-        });
-
-        // 3. Get the AlertDialog from create()
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 }

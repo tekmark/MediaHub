@@ -2,7 +2,6 @@ package com.example.chao.mediahub;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -50,7 +49,7 @@ public class CreatePlaylistActivity extends AppCompatActivity {
         mEditText = (EditText) findViewById(R.id.create_playlist_edittext_name);
         setListeners();
 
-        mPlaylistId = getIntent().getIntExtra(Tag.AGR_PLAYLIST_ID, INVALID_PLAYLIST_ID);
+        mPlaylistId = getIntent().getIntExtra(Tags.AGR_PLAYLIST_ID, INVALID_PLAYLIST_ID);
         if (mPlaylistId == INVALID_PLAYLIST_ID) {
             Log.d(TAG, "Create New Playlist Mode");
             mPlaylistName = "";

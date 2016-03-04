@@ -22,10 +22,12 @@ public class AddToPlaylistRecyclerViewAdapter extends
     private static final String TAG = "AddToPlaylistAdapter";
 
     private final List<Playlist> mPlaylists;
+    private final int mAudioId;
     private final OnInteractionListener mListener;
 
-    public AddToPlaylistRecyclerViewAdapter(List<Playlist> playlists, OnInteractionListener listener) {
+    public AddToPlaylistRecyclerViewAdapter(List<Playlist> playlists, int audioId, OnInteractionListener listener) {
         mPlaylists = playlists;
+        mAudioId = audioId;
         mListener = listener;
     }
 
@@ -51,7 +53,8 @@ public class AddToPlaylistRecyclerViewAdapter extends
                 if (mListener != null) {
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
-                    mListener.onClickPlaylist(playlist);
+                    //mListener.onClickPlaylist(playlist);
+                    mListener.playlistOnSelect(mAudioId, playlist);
                 }
             }
         });

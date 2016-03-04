@@ -1,14 +1,12 @@
 package com.example.chao.mediahub;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -148,7 +146,7 @@ public class PlaylistOptionsDialog extends Fragment {
                 mListener.onFragmentClose();
                 Log.d(TAG, "Modify Button onClick()");
                 Intent intent = new Intent(getContext(), CreatePlaylistActivity.class);
-                intent.putExtra(Tag.AGR_PLAYLIST_ID, mPlaylistId);
+                intent.putExtra(Tags.AGR_PLAYLIST_ID, mPlaylistId);
                 startActivity(intent);
             }
         });

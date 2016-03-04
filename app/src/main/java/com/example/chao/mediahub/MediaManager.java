@@ -248,7 +248,8 @@ public class MediaManager {
                     String playlistName = cursor.getString(playlistNameColIndex);
 
                     //TODO: memory cost/efficiency, a new private method might be better.
-                    int playlistSize = getPlaylistMusicFiles(context, playlistId).size();
+                    //int playlistSize = getPlaylistMusicFiles(context, playlistId).size();
+                    int playlistSize = getPlaylistSize(context, playlistId);
                     Playlist playlist = new Playlist(playlistId, playlistName, playlistSize);
                     Log.d(TAG, "Playlist Id : " + playlistId + ", Name : " + playlistName +
                             ", # of files : " + playlistSize);
@@ -492,9 +493,15 @@ public class MediaManager {
         if (playlistId < 0 || uri == null) {
             return false;
         } else {        //valid playlist id
+            if (isMusicFileInPlaylist(context, audioId, playlistId)) {
+                Log.d(TAG, "Audio Id : " + audioId + " exists in playlist Id: " + playlistId);
+                return false;
+            }
+            playOrder = getPlaylistSize(context, playlistId) + 1;
             ContentValues values = new ContentValues(1);
             values.put(MediaStore.Audio.Playlists.Members.AUDIO_ID, audioId);
-            Log.d(TAG, "Insert AudioId : " + audioId + " to PlaylistId: " + playlistId);
+            values.put(MediaStore.Audio.Playlists.Members.PLAY_ORDER, playOrder);
+            Log.d(TAG, "Insert AudioId : " + audioId + " to PlaylistId: " + playlistId + " palyOrder: " + playOrder);
             resolver.insert(uri, values);
             return true;
         }
@@ -510,6 +517,30 @@ public class MediaManager {
         // Delete row in playlist database
         String filter = MediaStore.Audio.Playlists._ID + "=" + playlistId;
         resolver.delete(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, filter, null);
+    }
+
+    public static int getPlaylistSize(Context context, int playlistId) {
+        int size = 0;
+        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+        String proj [] = {"count(*) AS count"};
+        Cursor cursor = context.getContentResolver().query(uri, proj, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            size = cursor.getInt(0);
+            cursor.close();
+        }
+        return size;
+    }
+
+    public static boolean isMusicFileInPlaylist(Context context, int audioId, int playlistId) {
+        Uri uri = MediaStore.Audio.Playlists.Members.getContentUri("external", playlistId);
+        String proj[] = {MediaStore.Audio.Playlists.Members.AUDIO_ID};
+        String filter = MediaStore.Audio.Playlists.Members.AUDIO_ID + "=" + audioId;
+        Cursor cursor = context.getContentResolver().query(uri, proj, filter, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            cursor.close();
+            return true;
+        }
+        return false;
     }
 
     private static void showColumnNames (String [] columns) {

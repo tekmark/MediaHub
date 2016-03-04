@@ -143,7 +143,6 @@ public class PlaylistsTabFragment extends Fragment {
      */
     public interface OnInteractionListener {
         // TODO: Update argument type and name
-//        void onFragmentInteraction(Uri uri);
         void playlistOptionsOnClick(int playlistId);
         void playlistOnClick(int playlistId, String playlistName);
     }

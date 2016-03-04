@@ -128,7 +128,9 @@ public class LibraryTabFragment extends Fragment {
      */
     public interface OnInteractionListener {
         // TODO: Update argument type and name
-        void onClickMoreOptions(int audioId);
+//        void onClickMoreOptions(int audioId);
+        void musicfileOnClick(int audioId);
+        void musicfileOptionsOnClick(int audioId);
     }
 
     private void updateUI() {
@@ -172,7 +174,8 @@ public class LibraryTabFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Log.d(TAG, "more option on click, AudioId: " + mAudioId);
-                    mListener.onClickMoreOptions(mAudioId);
+//                    mListener.onClickMoreOptions(mAudioId);
+                    mListener.musicfileOptionsOnClick(mAudioId);
                 }
             });
             mMusicFileInfo.setOnClickListener(new View.OnClickListener() {
