@@ -41,7 +41,7 @@
         android:layout_height="wrap_content" />
     <ImageButton
         android:id="@id/playlist_top_bar_button_repeat"
-        android:src="@drawable/repeat_disabled_filled_32"
+        android:src="@drawable/loop"
         android:background="@color/transparent"
         android:layout_toStartOf="@+id/playlist_top_bar_button_edit"
         android:layout_toLeftOf="@id/playlist_top_bar_button_edit"

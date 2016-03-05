@@ -12,15 +12,16 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class MusicPlaybackService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener,
         AudioManager.OnAudioFocusChangeListener {
 
     private static final String TAG = "MusicPlaybackService";
-
-    final static public int INVALID_POSITION = -1;
 
     //private static final String ACTION_PLAY = "com.example.action.PLAY";
     //final static private int REACH_THE_END_OF_PLAYLIST = -1;
@@ -35,21 +36,27 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     private static final int PLAYING_LIST_INVALID_STATE = -1;
 
     private int mPlayingListState;
-
     private int mCurrentPosition;
 
-    private boolean isShuffle = false;
     private boolean isRepeat = false;
     private boolean isRepeatAll = false;
+
+    private int mLoopingState;
 
     @Override
     public void onCreate() {
         super.onCreate();
         initMediaPlayer();
+
+        //construct a playlist
+        mPlayingList = PlaybackServicePlayingList.newInstance();
+
+        //set currentPositison to invalid position;
+        mCurrentPosition = PlaybackServicePlayingList.PLAYLIST_INVALID_POS;
+        mPlayingListState  = PLAYING_LIST_INVALID_STATE;
     }
 
-    public void initMediaPlayer() {
-
+    private void initMediaPlayer() {
         mMediaPlayer = new MediaPlayer();                            // initialize MediaPlayer
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  // set stream type to music
         //set wake lock
@@ -58,11 +65,6 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnErrorListener(this);
         mMediaPlayer.setOnCompletionListener(this);
-
-        //set currentPositison to -1;
-        mCurrentPosition = 0;
-        mPlayingList = new PlaybackServicePlayingList();
-        mPlayingListState  = PLAYING_LIST_INVALID_STATE;
     }
 
     @Override
@@ -92,16 +94,6 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     public void onCompletion(MediaPlayer mp) {
         Log.d(TAG, "OnCompleteListener is called");
         prepareNext();
-        //next();
-//        reset();
-//        if (prepareNextSong()) {
-            //informActivity("", "");
-//        } else {
-            //resetPlaylist();
-//            mPlayingList.resetCur();
-//            mCurrentPosition = 0;
-            //next();
-//        }
     }
 
     @Override
@@ -161,9 +153,27 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         }
     }
 
+
+    public int getPlaylistLoopingState() {
+        return mLoopingState;
+    }
+
+    public void setPlaylistLoopingState(int state) {
+        mLoopingState = state;
+        if (state == Tags.States.STATE_LOOPING) {
+            mPlayingList.setLooping(true);
+        } else if (state == Tags.States.STATE_NOT_LOOPING){
+            mPlayingList.setLooping(false);
+        } else {    //TODO: single song loop.
+            Log.d(TAG, "Unsupported Playlist State");
+            return;
+        }
+        mLoopingState = state;
+    }
+
     public void updatePlayingList(List<MusicFile> list) {
         mPlayingList.update(list);
-        //TODO: change playlist state
+        mPlayingListState = PLAYING_LIST_INITIALIZED_STATE;
         Log.d(TAG, "Playing List updated. size is : " + list.size());
     }
 
@@ -188,17 +198,15 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     public void playPlaylistFrom(int pos) {
         mMediaPlayer.reset();
         mPlayingList.move(pos);
-        //mCurrentPosition = pos;
         prepareNext();
-        //prepareNextSong();
     }
 
-    private void informActivity(String action, String msg) {
-        Intent intent = new Intent("my-event");
-        intent.putExtra("message", mCurrentPosition);
-        Log.d(TAG, "INTENT SEND");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
+//    private void informActivity(String action, String msg) {
+//        Intent intent = new Intent("my-event");
+//        intent.putExtra("message", mCurrentPosition);
+//        Log.d(TAG, "INTENT SEND");
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+//    }
 
     public void pause() {
         Log.d(TAG, "pause() is called");
@@ -246,10 +254,9 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
                 mMediaPlayer.reset();
                 mMediaPlayer.setDataSource(path);
                 mMediaPlayer.prepareAsync();
-//                return true;
             } catch (IOException e) {
+                //TODO: error handling
                 Log.e(TAG, "Cannot find audio file: " + path);
-//                return false;
             }
         } else {
             Log.d(TAG, "Reach the end of current playlist.");
@@ -398,7 +405,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     }
 
     public MusicFile getCurrentMusicFile() {
-        if (mCurrentPosition != INVALID_POSITION){
+        if (mCurrentPosition != PlaybackServicePlayingList.PLAYLIST_INVALID_POS){
             return mPlayingList.getMusicFile(mCurrentPosition);
         } else {
             return null;
@@ -430,6 +437,15 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     public void setEventListener(Context context) {
         mListener = (EventListener)context;
+    }
+
+    public boolean isShuffling() {
+        return mPlayingList.isShuffling();
+    }
+
+    public void shufflePlaylist(boolean shuffle) {
+        mPlayingList.shuffle(shuffle);
+        Log.d(TAG, mPlayingList.getOrdersString());
     }
 
 }

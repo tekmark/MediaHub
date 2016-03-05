@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -151,6 +150,9 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             //bind controller to service
             //mController.bindService(mPlaybackService);
             mBotInfoBar.bindService(mPlaybackService);
+            //set status
+            mTopController.setLoopBtnState(mPlaybackService.getPlaylistLoopingState());
+            mTopController.setShuffleBtnState(mPlaybackService.isShuffling());
             mBound = true;
             Log.d(TAG, "MusicPlaybackService connected");
         }
@@ -223,6 +225,25 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         mPlaybackService.playPlaylistFrom(0);
         showBottomInfoBar();
         mBotInfoBar.startSyncMusicService();
+    }
+
+    @Override
+    public void onLoop(int state) {
+        Log.d(TAG, "OnLoop");
+        if (state == Tags.States.STATE_LOOPING) {
+            mPlaybackService.setPlaylistLoopingState(state);
+        } else if (state == Tags.States.STATE_NOT_LOOPING) {
+            //mPlaybackService.setPlaylistNonLooping();
+            mPlaybackService.setPlaylistLoopingState(state);
+        } else {//TODO: single song loop.
+            Log.d(TAG, "unsupported state");
+        }
+    }
+
+    @Override
+    public void onShuffle(boolean state) {
+        Log.d(TAG, "onShuffle");
+        mPlaybackService.shufflePlaylist(state);
     }
 
     public void showBottomInfoBar() {

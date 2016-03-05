@@ -1,7 +1,6 @@
 package com.example.chao.mediahub;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -33,7 +32,7 @@ public class PlaylistTopControllerFragment extends Fragment {
 
     private View mBtnPlayAll;
     private ImageButton mBtnShuffle;
-    private ImageButton mBtnRepeat;
+    private ImageButton mBtnLoop;
     private ImageButton mBtnEditList;
 
     private EventListener mListener;
@@ -78,7 +77,7 @@ public class PlaylistTopControllerFragment extends Fragment {
 
         mBtnPlayAll = rootView.findViewById(R.id.playlist_top_bar_play_all);
         mBtnShuffle = (ImageButton) rootView.findViewById(R.id.playlist_top_bar_button_shuffle);
-        mBtnRepeat = (ImageButton) rootView.findViewById(R.id.playlist_top_bar_button_repeat);
+        mBtnLoop = (ImageButton) rootView.findViewById(R.id.playlist_top_bar_button_repeat);
         mBtnEditList = (ImageButton) rootView.findViewById(R.id.playlist_top_bar_button_edit);
         setListeners();
         return rootView;
@@ -121,6 +120,8 @@ public class PlaylistTopControllerFragment extends Fragment {
     public interface EventListener {
         // TODO: Update argument type and name
         void playAll();
+        void onLoop(int state);
+        void onShuffle(boolean state);
     }
 
     private void setListeners() {
@@ -128,6 +129,16 @@ public class PlaylistTopControllerFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Shuffle Button onClick()");
+                if (mBtnShuffle.isSelected()) {
+                    Log.d(TAG, "shuffle -> not shuffle");
+                    mBtnShuffle.setSelected(false);
+                    mListener.onShuffle(false);
+                } else {
+                    Log.d(TAG, "not shuffle -> shuffle");
+                    mBtnShuffle.setSelected(true);
+                    mListener.onShuffle(true);
+                }
+
             }
         });
 
@@ -138,6 +149,40 @@ public class PlaylistTopControllerFragment extends Fragment {
                 mListener.playAll();
             }
         });
+        mBtnLoop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Loop onClick()");
+                if (mBtnLoop.isSelected()) {
+                    Log.d(TAG, "looping -> non looping");
+                    mBtnLoop.setSelected(false);
+                    mListener.onLoop(Tags.States.STATE_NOT_LOOPING);
+                } else {
+                    Log.d(TAG, "non looping -> looping");
+                    mBtnLoop.setSelected(true);
+                    mListener.onLoop(Tags.States.STATE_LOOPING);
+                }
+                //mListener.onLoop();
+            }
+        });
+    }
+
+    public void setLoopBtnState(int state) {
+        if (state == Tags.States.STATE_LOOPING) {
+            mBtnLoop.setSelected(true);
+        } else if (state == Tags.States.STATE_NOT_LOOPING) {
+            mBtnLoop.setSelected(false);
+        } else {
+
+        }
+    }
+
+    public void setShuffleBtnState(boolean state) {
+        if (state) {
+            mBtnShuffle.setSelected(true);
+        } else {
+            mBtnShuffle.setSelected(false);
+        }
     }
 
 }

@@ -20,6 +20,11 @@ public class Tags {
         public static final String PLAYLIST_TOP_CONTROLLER = "TagPlaylistTopController";
         public static final String PLAYLIST_BOT_INFO_BAR = "TagPlaylistBotInfoBar";
     }
+    public class States {
+        public static final int STATE_LOOPING = 0;
+        public static final int STATE_LOOPING_ONE = 1;
+        public static final int STATE_NOT_LOOPING = 2;
+    }
 
     public class MediaPlayer {
         //public static final String LABEL_TITLE = "TagMediaPlayerLabelTitle";
