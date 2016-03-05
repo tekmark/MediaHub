@@ -42,8 +42,8 @@ public class MainActivity extends AppCompatActivity
     private static final String STATE_CURRENT_TAB_POSITION = "StateCurrentTabPosition";
 
 
-    final static public String EXTRA_AGR_PLAYLIST_ID = "PlaylistsTabFragment.PLAYLIST_ID";
-    final static public String EXTRA_AGR_PLAYLIST_NAME = "PlaylistsTabFragment.PLAYLIST_NAME";
+//    final static public String EXTRA_AGR_PLAYLIST_ID = "PlaylistsTabFragment.PLAYLIST_ID";
+//    final static public String EXTRA_AGR_PLAYLIST_NAME = "PlaylistsTabFragment.PLAYLIST_NAME";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -94,14 +94,11 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(MainActivity.this,
                         "Selected page position: " + position, Toast.LENGTH_SHORT).show();
                 if (position == PLAYLISTS_TAB_POSITION) {
-
+                    removeDialogByTag(Tags.Fragments.DIALOG_MUSIC_FILE_OPTIONS, 0);
                 } else if (position == LIBRARY_TAB_POSITION) {
-                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(TAG_PLAYLIST_OPTIONS_FRAGMENT);
-                    if (fragment != null) {
-                        //onFragmentClose();
-                    }
+                    removeDialogByTag(Tags.Fragments.DIALOG_PLAYLIST_OPTIONS, 0);
                 } else {
-
+                    Log.e(TAG, "Position Error");
                 }
             }
 
@@ -171,7 +168,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "onDestroy()");
         super.onDestroy();
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -190,8 +187,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void playlistOnClick(int playlistId, String playlistName) {
         Intent intent = new Intent(this, PlaylistActivity.class);
-        intent.putExtra(EXTRA_AGR_PLAYLIST_ID, playlistId);
-        intent.putExtra(EXTRA_AGR_PLAYLIST_NAME, playlistName);
+        intent.putExtra(Tags.Arguments.AGR_PLAYLIST_ID, playlistId);
+        intent.putExtra(Tags.Arguments.AGR_PLAYLIST_NAME, playlistName);
         startActivity(intent);
     }
 

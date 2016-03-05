@@ -17,5 +17,11 @@ public class Tags {
         public static final String DIALOG_MUSIC_FILE_OPTIONS = "TagDialogMusicFileOptions";
         public static final String DIALOG_ADD_TO_PLAYLIST = "TagDialogAddToPlaylist";
         public static final String DIALOG_PLAYLIST_OPTIONS = "TagDialogPlaylistOptions";
+        public static final String PLAYLIST_TOP_CONTROLLER = "TagPlaylistTopController";
+        public static final String PLAYLIST_BOT_INFO_BAR = "TagPlaylistBotInfoBar";
+    }
+
+    public class MediaPlayer {
+        //public static final String LABEL_TITLE = "TagMediaPlayerLabelTitle";
     }
 }

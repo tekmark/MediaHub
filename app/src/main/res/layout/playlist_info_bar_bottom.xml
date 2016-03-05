@@ -5,8 +5,8 @@
     android:background="@color/transparent"
     android:onClick="showController"
     android:visibility="invisible">
-    <SeekBar
-        android:id="@+id/mediaplayer_controller_seek_bar"
+    <!--<SeekBar
+        android:id="@+id/bot_info_bar_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/transparent"
@@ -17,10 +17,10 @@
         android:max="100"
         android:progress="0"/>
     <TextView
-        android:id="@+id/mediaplayer_controller_label_current_time"
+        android:id="@+id/bot_info_bar_label_current_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/mediaplayer_controller_seek_bar"
+        android:layout_above="@id/bot_info_bar_seek_bar"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_marginStart="20dp"
@@ -29,10 +29,10 @@
         android:textStyle="bold"
         android:textColor="@color/lime_green"/>
     <TextView
-        android:id="@+id/mediaplayer_controller_label_total_time"
+        android:id="@+id/bot_info_bar_label_total_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/mediaplayer_controller_seek_bar"
+        android:layout_above="@id/bot_info_bar_seek_bar"
         android:layout_marginEnd="20dp"
         android:layout_marginRight="20dp"
         android:layout_alignParentEnd="true"
@@ -42,17 +42,17 @@
         android:textStyle="bold"
         android:textColor="@color/lime_green"/>
     <TextView
-        android:id="@+id/mediaplayer_controller_label_artist"
+        android:id="@+id/bot_info_bar_label_artist"
         android:text="@string/unknown_artist"
         android:textColor="@color/black"
         android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/mediaplayer_controller_label_current_time"
-        android:layout_toRightOf="@id/mediaplayer_controller_label_current_time"
-        android:layout_toStartOf="@id/mediaplayer_controller_label_total_time"
-        android:layout_toLeftOf="@id/mediaplayer_controller_label_total_time"
-        android:layout_above="@id/mediaplayer_controller_seek_bar"/>
+        android:layout_toEndOf="@id/bot_info_bar_label_current_time"
+        android:layout_toRightOf="@id/bot_info_bar_label_current_time"
+        android:layout_toStartOf="@id/bot_info_bar_label_total_time"
+        android:layout_toLeftOf="@id/bot_info_bar_label_total_time"
+        android:layout_above="@id/bot_info_bar_seek_bar"/>
     <TextView
         android:id="@+id/mediaplayer_controller_label_title"
         android:text="@string/unknown_music"
@@ -65,5 +65,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_above="@id/mediaplayer_controller_label_artist"/>
+        android:layout_above="@id/bot_info_bar_label_artist"/>
+        -->
 </RelativeLayout>

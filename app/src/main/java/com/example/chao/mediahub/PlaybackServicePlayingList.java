@@ -9,74 +9,85 @@ import java.util.ListIterator;
  * Created by CHAO on 10/27/2015.
  */
 public class PlaybackServicePlayingList {
-    final static private String DEFAULT_PLAYLIST_NAME = "New Playlsit";
+    private static final String DEFAULT_PLAYLIST_NAME = "New Playlsit";
 
-    private List<MusicFile> musicFiles;
-    private String playlistName;
-    private ListIterator<MusicFile> it;
+    private List<MusicFile> mMusicFiles;
+    private String mPlaylistName;
+    private ListIterator<MusicFile> mIterator;
 
-    private boolean repeat;
+    private boolean mLooping;
+    private boolean mRepeat;
 
     public PlaybackServicePlayingList() {
-        playlistName = DEFAULT_PLAYLIST_NAME;
-        musicFiles = new ArrayList<>();
-        it = musicFiles.listIterator();
-        repeat = false;
+        mPlaylistName = DEFAULT_PLAYLIST_NAME;
+        mMusicFiles = new ArrayList<>();
+        mIterator = mMusicFiles.listIterator();
+        mRepeat = false;
+        mLooping = false;
     }
 
     public PlaybackServicePlayingList(String name) {
-        playlistName = name;
-        musicFiles = new ArrayList<>();
-        it = musicFiles.listIterator();
-        repeat = false;
+        mPlaylistName = name;
+        mMusicFiles = new ArrayList<>();
+        mIterator = mMusicFiles.listIterator();
+        mRepeat = false;
+        mLooping = false;
     }
 
+    //copy constructor
     public PlaybackServicePlayingList(PlaybackServicePlayingList list) {
-        playlistName = list.playlistName;
-        musicFiles = new ArrayList<>(list.musicFiles);
-        it = musicFiles.listIterator();
-        repeat = false;
+        mPlaylistName = list.mPlaylistName;
+        mMusicFiles = new ArrayList<>(list.mMusicFiles);
+        mIterator = mMusicFiles.listIterator();
+        mRepeat = false;
+        mLooping = false;
+    }
+
+    //factory method.
+    public static PlaybackServicePlayingList newInstance() {
+        PlaybackServicePlayingList list = new PlaybackServicePlayingList();
+        return list;
+    }
+
+    //getter and setter
+    public String getPlaylistName() {
+        return mPlaylistName;
+    }
+    public void setPlaylistName (String newPlaylistName) {
+        mPlaylistName = newPlaylistName;
     }
 
     public void update(List<MusicFile> list) {
-        musicFiles = list;
-        it = musicFiles.listIterator();
-        repeat = false;
+        mMusicFiles = list;
+        mIterator = mMusicFiles.listIterator();
     }
 
-
-    public String getPlaylistName() {
-        return playlistName;
+    public void loadPlaylingList(List<MusicFile> list) {
+        mMusicFiles = list;
+        mIterator = mMusicFiles.listIterator();
     }
-    public void setPlaylistName (String newPlaylistName) {
-        playlistName = newPlaylistName;
-    }
-
-//    public void addMusicFile(MusicFile musicFile) {
-//        musicFiles.add(musicFile);
-//    }
 
     public MusicFile getMusicFile(int index) {
-        return musicFiles.get(index);
+        return mMusicFiles.get(index);
     }
 
     public boolean hasNext() {
-        if (it.hasNext()) {
+        if (mIterator.hasNext()) {
             return true;
-        } else if (repeat) {
+        } else if (mRepeat) {
             resetCur();
-            return it.hasNext();
+            return mIterator.hasNext();
         } else {
             return false;
         }
     }
 
     public boolean hasPrevious() {
-        if (it.hasPrevious()) {
+        if (mIterator.hasPrevious()) {
             return true;
-        } else if (repeat) {
-            it = musicFiles.listIterator(musicFiles.size());
-            return it.hasPrevious();
+        } else if (mRepeat) {
+            mIterator = mMusicFiles.listIterator(mMusicFiles.size());
+            return mIterator.hasPrevious();
         } else {
             return false;
         }
@@ -84,34 +95,34 @@ public class PlaybackServicePlayingList {
 
     //these two functions must be called after hasNext() and hasPrevious() respectively.
     public int nextIndex() {
-        return it.nextIndex();
+        return mIterator.nextIndex();
     }
     public int previousIndex() {
-        return it.previousIndex();
+        return mIterator.previousIndex();
     }
 
     public MusicFile next() {
-        return it.next();
+        return mIterator.next();
     }
 
     public MusicFile previous() {
-        return it.previous();
+        return mIterator.previous();
     }
 
     public boolean isRepeat() {
-        return repeat;
+        return mRepeat;
     }
 
     public void setRepeat() {
-        repeat = true;
+        mRepeat = true;
     }
 
     public void resetRepeat() {
-        repeat = false;
+        mRepeat = false;
     }
 
     public void shuffle() {
-        Collections.shuffle(musicFiles);
+        Collections.shuffle(mMusicFiles);
         resetCur();
     }
 
@@ -120,17 +131,17 @@ public class PlaybackServicePlayingList {
     }
 
     public int size() {
-        return musicFiles.size();
+        return mMusicFiles.size();
     }
     public List<MusicFile> getMusicFiles() {
-        return musicFiles;
+        return mMusicFiles;
     }
 
     public void move(int i) {
-        it = musicFiles.listIterator(i);
+        mIterator = mMusicFiles.listIterator(i);
     }
 
     public void resetCur() {
-        it = musicFiles.listIterator();
+        mIterator = mMusicFiles.listIterator();
     }
 }

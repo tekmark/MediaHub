@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,19 +19,28 @@ import android.view.View;
 
 import java.util.List;
 
-public class PlaylistActivity extends AppCompatActivity implements PlaylistFragment.EventListener {
-    final static String TAG = "PlaylistActivity";
+public class PlaylistActivity extends AppCompatActivity implements PlaylistFragment.EventListener,
+        PlaylistTopControllerFragment.EventListener,
+        MusicPlaybackService.EventListener {
+    private static final String TAG = "PlaylistActivity";
+    //parameters name
+    private static final String AGR_PLAYLIST_NAME = Tags.Arguments.AGR_PLAYLIST_NAME;
+    private static final String AGR_PLAYLIST_ID = Tags.Arguments.AGR_PLAYLIST_ID;
+
+    private int mPlaylistId;
+    private String mPlaylistName;
 
     private MusicPlaybackService mPlaybackService;
     private boolean mBound = false;
 
-    private int mPlaylistId;
     private PlaylistFragment mPlaylistFragment;
+    private PlaylistTopControllerFragment mTopController;
+    private PlaylistBotInfoFragment mBotInfoBar;
 
     private boolean isInfoBarVisible = false;
     //private List<MusicFile> mPlaylist;
 
-    private MediaplayerController mController;
+    //private MediaplayerController mController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,47 +49,61 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         //get info from intent
-        Intent intent = getIntent();
-        String title = intent.getStringExtra(PlaylistsTabFragment.EXTRA_AGR_PLAYLIST_NAME);
+        Bundle b = getIntent().getExtras();
 
         //update toolbar title to playlist name
-        toolbar.setTitle(title);
+        mPlaylistName = b.getString(AGR_PLAYLIST_NAME);
+        toolbar.setTitle(mPlaylistName);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mController = MediaplayerController.newInstance(this);
-
-        mPlaylistId = intent.getIntExtra(PlaylistsTabFragment.EXTRA_AGR_PLAYLIST_ID, Playlist.INVALID_PLAYLIST_ID);
+        mPlaylistId = b.getInt(AGR_PLAYLIST_ID, Playlist.INVALID_PLAYLIST_ID);
         if (mPlaylistId == Playlist.INVALID_PLAYLIST_ID) {
             Log.e(TAG, "Invalid Playlist Id");
         } else {
             Log.d(TAG, "Playlist Id : " + mPlaylistId);
         }
 
-        //mController = MediaPlayerController.newInstance(this);
-
         FragmentManager fm = getSupportFragmentManager();
+
+        mTopController = (PlaylistTopControllerFragment) fm.findFragmentByTag(Tags.Fragments.PLAYLIST_TOP_CONTROLLER);
+        if (mTopController == null) {
+            Log.d(TAG, "No mTopController");
+            mTopController = PlaylistTopControllerFragment.newInstance("", "");
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.add(R.id.playlist_top_controller_container, mTopController, Tags.Fragments.PLAYLIST_TOP_CONTROLLER);
+            ft.commit();
+        }
+
         mPlaylistFragment = (PlaylistFragment) fm.findFragmentById(R.id.fragment_playlist);
         if (mPlaylistFragment == null) {
             mPlaylistFragment = PlaylistFragment.newInstance(mPlaylistId);
             fm.beginTransaction().add(R.id.fragment_playlist, mPlaylistFragment).commit();
         }
-        showInfoBar();
+        //showInfoBar();
+
+        mBotInfoBar = (PlaylistBotInfoFragment) fm.findFragmentByTag(Tags.Fragments.PLAYLIST_BOT_INFO_BAR);
+        if (mBotInfoBar == null) {
+            Log.d(TAG, "Create Bottom Info Bar.");
+            mBotInfoBar = PlaylistBotInfoFragment.newInstance("", "");
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.hide(mBotInfoBar);
+            ft.add(R.id.playlist_info_bar_bottom, mBotInfoBar, Tags.Fragments.PLAYLIST_BOT_INFO_BAR);
+            ft.commit();
+        }
+        //mController = MediaplayerController.newInstance(this);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        Log.d(TAG, "onOptionsItemSelected(), Id: " + id + " home id: " + android.R.id.home);
         if (id == android.R.id.home) {
             // This ID represents the Home or Up button.
-            Log.d(TAG, "navigate up");
             NavUtils.navigateUpFromSameTask(this);
             return true;
         }
-        Log.d(TAG, "onOptionsItemSelected(), Id: " + id);
         return super.onOptionsItemSelected(item);
     }
 
@@ -120,20 +145,20 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             //cast the IBinder and get LocalService instance
             MusicPlaybackService.ServiceBinder binder = (MusicPlaybackService.ServiceBinder) service;
             mPlaybackService = binder.getService();
-            Log.d(TAG, "MusicPlaybackService connected");
             //sync background music playback service's playlist
             syncPlaybackServicePlayingList();
-
+            mPlaybackService.setEventListener(PlaylistActivity.this);
             //bind controller to service
-            mController.bindService(mPlaybackService);
-
+            //mController.bindService(mPlaybackService);
+            mBotInfoBar.bindService(mPlaybackService);
             mBound = true;
-    }
+            Log.d(TAG, "MusicPlaybackService connected");
+        }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            Log.d(TAG, "MusicPlaybackService disconnected");
             mBound = false;
+            Log.d(TAG, "MusicPlaybackService disconnected");
         }
     };
 
@@ -141,7 +166,26 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     public void itemPositionOnClick(int position) {
         if(mBound && mPlaybackService != null) {
             Log.d(TAG, "position " + position);
-            if (mPlaybackService.getCurrentPosition() == position && mPlaybackService.isPlaying()) {
+            if (mPlaybackService.getmCurrentPosition() == position && mPlaybackService.isPlaying()) {
+                mPlaybackService.pause();
+            } else {
+                mPlaybackService.playPlaylistFrom(position);
+                //mController.sync();
+            }
+            mPlaylistFragment.setPositionHighlighted(position);
+        } else {
+            Log.w(TAG, "PlaybackService is not bound");
+        }
+    }
+
+    @Override
+    public void musicFileOnClick(int position) {
+        Log.d(TAG, "MusicFileOnClick(), Position: " + position);
+        MusicFile file = mPlaylistFragment.getMusicFile(position);
+        Log.d(TAG, file.toString());
+
+        if(mBound && mPlaybackService != null) {
+            if (mPlaybackService.getmCurrentPosition() == position && mPlaybackService.isPlaying()) {
                 mPlaybackService.pause();
             } else {
                 mPlaybackService.playPlaylistFrom(position);
@@ -172,5 +216,50 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
             view.setVisibility(View.VISIBLE);
             isInfoBarVisible = true;
         }
+    }
+
+    @Override
+    public void playAll() {
+        mPlaybackService.playPlaylistFrom(0);
+        showBottomInfoBar();
+        mBotInfoBar.startSyncMusicService();
+    }
+
+    public void showBottomInfoBar() {
+        FragmentManager fm = getSupportFragmentManager();
+        if (mBotInfoBar.isHidden()) {        //if added but hidden.
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.show(mBotInfoBar);
+            ft.commit();
+            Log.d(TAG, "show top info bar");
+        } else {
+            Log.d(TAG, "not hidden");
+        }
+    }
+
+    public void hideBottomInfoBar() {
+        FragmentManager fm = getSupportFragmentManager();
+        if (mBotInfoBar != null && mBotInfoBar.isAdded() && !mBotInfoBar.isHidden()) {
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.hide(mBotInfoBar);
+            ft.commit();
+            Log.d(TAG, "hide bot info bar");
+        }
+    }
+
+    @Override
+    public void playlistOnCompletion() {
+        hideBottomInfoBar();
+        mPlaylistFragment.clearHighlighted();
+    }
+
+    @Override
+    public void musicFileOnStart(int position) {
+        Log.d(TAG, "POSITION: " + position);
+        if (mBotInfoBar.isHidden()) {
+            showBottomInfoBar();
+        }
+        mBotInfoBar.startSyncMusicService();
+        mPlaylistFragment.setPositionHighlighted(position);
     }
 }

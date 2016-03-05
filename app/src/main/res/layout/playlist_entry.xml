@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/playlist_entry_background">
-    <ImageButton
+    <!--<ImageButton
         android:id="@+id/playlist_entry_button_more"
         android:contentDescription="More button shows more options"
         android:background="@color/transparent"
@@ -71,6 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </RelativeLayout>
+    -->
     <!--
     <include layout="@layout/playlist_item_options"
         android:layout_width="match_parent"

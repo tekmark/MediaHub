@@ -23,9 +23,9 @@ import java.util.List;
 public class PlaylistFragment extends Fragment {
 
     final private static String TAG = "PlaylistFragment";
-    final private static String ARG_PLAYLIST_ID = "PLAYLIST_ID";
-    private EventListener mListener;
+    final private static String ARG_PLAYLIST_ID = Tags.Arguments.AGR_PLAYLIST_ID;
 
+    private EventListener mListener;
 
     private RecyclerView mPlaylistRecyclerView;
     private PlaylistAdapter mAdapter;
@@ -35,9 +35,12 @@ public class PlaylistFragment extends Fragment {
 //    private MusicPlaybackService mPlaybackService;
 
     public interface EventListener {
-        public void itemPositionOnClick(int position);
+        void itemPositionOnClick(int position);
+        void musicFileOnClick(int audioId);
         //public void syncPlayingList(List<MusicFile> list);
     }
+
+    private int mCurrentHighlightedPosition = -1;
 
     public PlaylistFragment() {
     }
@@ -53,12 +56,11 @@ public class PlaylistFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Activity activity = getActivity();
-        if (activity instanceof EventListener) {
-            mListener = (EventListener) activity;
+        if (context instanceof EventListener) {
+            mListener = (EventListener) context;
         } else {
-            //TODO: error/exception handling
-            Log.e(TAG, "ERROR");
+            throw new RuntimeException(context.toString()
+                    + " must implement EventListener");
         }
     }
     @Override
@@ -98,7 +100,8 @@ public class PlaylistFragment extends Fragment {
         return mPlaylist;
     }
 
-    private int mCurrentHighlightedPosition = -1;
+
+
     public void setPositionHighlighted(int position) {
         if (position == mCurrentHighlightedPosition) {
             Log.d(TAG, "Position : " + position + " is already highlighted");
@@ -110,14 +113,27 @@ public class PlaylistFragment extends Fragment {
                 Log.d(TAG, "remove highlight at Position: " + mCurrentHighlightedPosition);
                 holder.resetHighlight();
             }
-            holder = (PlaylistItemHolder) mPlaylistRecyclerView.findViewHolderForAdapterPosition(
-                    position);
-            if (holder != null) {
-                Log.d(TAG, "highlight position: " + position);
-                holder.setHighlight();
-                mCurrentHighlightedPosition = position;
+            if (position != -1) {
+                holder = (PlaylistItemHolder) mPlaylistRecyclerView.findViewHolderForAdapterPosition(
+                        position);
+                if (holder != null) {
+                    Log.d(TAG, "highlight position: " + position);
+                    holder.setHighlight();
+                    mCurrentHighlightedPosition = position;
+                }
+            } else {
+                mCurrentHighlightedPosition = -1;
             }
         }
+    }
+
+    public void clearHighlighted() {
+        setPositionHighlighted(-1);
+    }
+
+    public MusicFile getMusicFile(int position) {
+        MusicFile file = mPlaylist.get(position);
+        return file;
     }
 
     private void updateUI() {
@@ -145,21 +161,24 @@ public class PlaylistFragment extends Fragment {
         public PlaylistItemHolder(View itemView) {
             super(itemView);
             isHighlighted = false;
-            mTitle = (TextView)itemView.findViewById(R.id.playlist_entry_label_title);
-            mArtist = (TextView) itemView.findViewById(R.id.playlist_entry_label_artist);
-            mDuration = (TextView) itemView.findViewById(R.id.playlist_entry_label_duration);
+            //Music File info
+            mTitle = (TextView)itemView.findViewById(R.id.music_file_info_title);
+            mArtist = (TextView) itemView.findViewById(R.id.music_file_info_artist_album);
+            mDuration = (TextView) itemView.findViewById(R.id.music_file_info_duration);
+
             mPosition = (TextView) itemView.findViewById(R.id.playlist_entry_label_position);
             mButton = (ImageButton) itemView.findViewById(R.id.playlist_entry_button_more);
-            RelativeLayout view = (RelativeLayout)itemView.findViewById(R.id.playlist_entry_info);
+            View view = itemView.findViewById(R.id.playlist_music_file_info);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //mListener.selectPlaybackServicePosition(1);
                     int position = Integer.parseInt(mPosition.getText().toString());
                     Log.d(TAG, "itemPositionOnClick -> Position : " + position + " Title : " + mMusicFile.getTitle());
-                    mListener.itemPositionOnClick(position);
+                    //mListener.itemPositionOnClick(position);
 //                    Intent intent = new Intent(getContext(), PlayingActivity.class);
 //                    startActivity(intent);
+                    mListener.musicFileOnClick(position);
                 }
             });
         }
@@ -202,7 +221,7 @@ public class PlaylistFragment extends Fragment {
         @Override
         public PlaylistItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater.inflate(R.layout.playlist_entry, parent, false);
+            View view = layoutInflater.inflate(R.layout.playlist_activity_item, parent, false);
             return new PlaylistItemHolder(view);
         }
         @Override

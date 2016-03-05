@@ -23,6 +23,8 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnInteractionListener}
  * interface.
  */
+
+//TODO: disable back ground interactions.
 public class AddToPlaylistDialog extends Fragment {
     private static final String TAG = "AddToPlaylistDialog";
 

@@ -1,5 +1,7 @@
 package com.example.chao.mediahub;
 
+import java.util.Objects;
+
 /**
  * Created by CHAO on 10/26/2015.
  */
@@ -29,13 +31,23 @@ public class Playlist {
         mSize = playlistSize;
     }
 
-
     //copy constructor
     public Playlist(Playlist playlist) {
         mName = playlist.mName;
         mId = playlist.mId;
         mSize = playlist.mSize;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o != null && o instanceof Playlist) {
+            if (mId == ((Playlist)o).mId){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public String getName() {
         return mName;
@@ -56,8 +68,4 @@ public class Playlist {
     public int getSize() {
         return mSize;
     }
-
-
-
-
 }

@@ -1,5 +1,6 @@
 package com.example.chao.mediahub;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,18 +22,19 @@ import android.widget.TextView;
  * create an instance of this fragment.
  */
 public class MediaplayerControllerFragment extends Fragment {
+
+    private static final String TAG = "PlayerControllerFrag";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    final static private String TAG = "MediaPlayerController";
-
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    private OnFragmentInteractionListener mListener;
+    private OnControllerInteractionListener mListener;
 
     private ImageButton mPlayPause;
     private ImageButton mEnd;
@@ -49,6 +51,10 @@ public class MediaplayerControllerFragment extends Fragment {
 
     private MusicPlaybackService mService;
     private boolean bound;
+
+    public MediaplayerControllerFragment() {
+        // Required empty public constructor
+    }
 
     /**
      * Use this factory method to create a new instance of
@@ -68,22 +74,15 @@ public class MediaplayerControllerFragment extends Fragment {
         return fragment;
     }
 
-    public MediaplayerControllerFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
 //        mService = null;
 //        bound = false;
-
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        Log.d(TAG, "onCreate() is called");
     }
 
     @Override
@@ -94,27 +93,19 @@ public class MediaplayerControllerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.mediaplayer_controller, container, false);
         //bind layout.
         bindLayout(rootView);
-
         return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-//    @Override
-//    public void onAttach(Activity activity) {
-//        super.onAttach(activity);
-//        try {
-//            mListener = (OnInteractionListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+//        if (context instanceof OnControllerInteractionListener) {
+//            mListener = (OnControllerInteractionListener) context;
+//        } else {
+//            throw new ClassCastException(context.toString()
 //                    + " must implement OnInteractionListener");
 //        }
-//    }
+    }
 
     @Override
     public void onDetach() {
@@ -132,12 +123,12 @@ public class MediaplayerControllerFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnControllerInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
 
-//    bind controller's layout to service, and set listeners
+    // bind controller's layout to service, and set listeners
     public boolean bindService(MusicPlaybackService musicService) {
         if (musicService == null) {
             mService = null;
@@ -165,7 +156,7 @@ public class MediaplayerControllerFragment extends Fragment {
         }
     }
 
-    public void setmTotalDuration(String duration) {
+    public void setTotalDuration(String duration) {
         if (mTotalDuration != null) {
             mTotalDuration.setText(duration);
         }

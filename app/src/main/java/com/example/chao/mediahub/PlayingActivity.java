@@ -26,7 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class PlayingActivity extends AppCompatActivity {
-    final static private String TAG = "PlayingActivity";
+    private static final String TAG = "PlayingActivity";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a

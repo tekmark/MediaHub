@@ -1,6 +1,7 @@
 package com.example.chao.mediahub;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -17,31 +18,37 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener,
         AudioManager.OnAudioFocusChangeListener {
 
-    final static private String TAG = "MusicPlaybackService";
+    private static final String TAG = "MusicPlaybackService";
+
     final static public int INVALID_POSITION = -1;
 
     //private static final String ACTION_PLAY = "com.example.action.PLAY";
     //final static private int REACH_THE_END_OF_PLAYLIST = -1;
-
     private final ServiceBinder mBinder = new ServiceBinder();
 
     private MediaPlayer mMediaPlayer = null;
 
     private PlaybackServicePlayingList mPlayingList;
 
-    final static int PLAYING_LIST_READY_STATE = 1;
-    final static int PLAYING_LIST_INITIALIZED_STATE = 0;
-    final static int PLAYING_LIST_INVALID_STATE = -1;
+    private static final int PLAYING_LIST_READY_STATE = 1;
+    private static final int PLAYING_LIST_INITIALIZED_STATE = 0;
+    private static final int PLAYING_LIST_INVALID_STATE = -1;
 
     private int mPlayingListState;
 
-    private int currentPosition;
+    private int mCurrentPosition;
+
     private boolean isShuffle = false;
     private boolean isRepeat = false;
     private boolean isRepeatAll = false;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        initMediaPlayer();
+    }
+
     public void initMediaPlayer() {
-        //mPlaylistManger = new PlaylistManager();
 
         mMediaPlayer = new MediaPlayer();                            // initialize MediaPlayer
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  // set stream type to music
@@ -53,15 +60,9 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mMediaPlayer.setOnCompletionListener(this);
 
         //set currentPositison to -1;
-        currentPosition = 0;
+        mCurrentPosition = 0;
         mPlayingList = new PlaybackServicePlayingList();
         mPlayingListState  = PLAYING_LIST_INVALID_STATE;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        initMediaPlayer();
     }
 
     @Override
@@ -90,14 +91,15 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     @Override
     public void onCompletion(MediaPlayer mp) {
         Log.d(TAG, "OnCompleteListener is called");
-        next();
+        prepareNext();
+        //next();
 //        reset();
 //        if (prepareNextSong()) {
             //informActivity("", "");
 //        } else {
             //resetPlaylist();
 //            mPlayingList.resetCur();
-//            currentPosition = 0;
+//            mCurrentPosition = 0;
             //next();
 //        }
     }
@@ -106,8 +108,10 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     public void onPrepared(MediaPlayer mp) {
         Log.d(TAG, "OnPrepared() is called");
         mMediaPlayer.start();
+        if (mListener != null) {
+            mListener.musicFileOnStart(mCurrentPosition);
+        }
     }
-
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -116,7 +120,6 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mPlayingList.resetCur();
         return true;
     }
-
 
     //TODO: link to it.
     @Override
@@ -160,7 +163,8 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     public void updatePlayingList(List<MusicFile> list) {
         mPlayingList.update(list);
-        Log.d(TAG, "Playing List updated");
+        //TODO: change playlist state
+        Log.d(TAG, "Playing List updated. size is : " + list.size());
     }
 
     public List<MusicFile> getMusicFiles() {
@@ -184,13 +188,14 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     public void playPlaylistFrom(int pos) {
         mMediaPlayer.reset();
         mPlayingList.move(pos);
-        //currentPosition = pos;
-        prepareNextSong();
+        //mCurrentPosition = pos;
+        prepareNext();
+        //prepareNextSong();
     }
 
     private void informActivity(String action, String msg) {
         Intent intent = new Intent("my-event");
-        intent.putExtra("message", currentPosition);
+        intent.putExtra("message", mCurrentPosition);
         Log.d(TAG, "INTENT SEND");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
@@ -215,9 +220,9 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mMediaPlayer.reset();
         mPlayingList.resetCur();
         if (mPlayingList.hasNext()) {
-            currentPosition = mPlayingList.nextIndex();
-            currentFile = mPlayingList.next();
-            String songPath = currentFile.getPath();
+            mCurrentPosition = mPlayingList.nextIndex();
+            mCurrentFile = mPlayingList.next();
+            String songPath = mCurrentFile.getPath();
             try {
                 mMediaPlayer.setDataSource(songPath);
                 mPlayingListState = PLAYING_LIST_INITIALIZED_STATE;
@@ -229,14 +234,43 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         }
     }
 
+    //for on complete
+    public void prepareNext() {
+        Log.d(TAG, "prepareNext() is called. Current position : " + mCurrentPosition);
+        if (mPlayingList.hasNext()) {
+            mCurrentPosition = mPlayingList.nextIndex();
+            mCurrentFile = mPlayingList.next();
+            Log.d(TAG, "Current File: " + mCurrentFile.toString());
+            String path = mCurrentFile.getPath();
+            try {
+                mMediaPlayer.reset();
+                mMediaPlayer.setDataSource(path);
+                mMediaPlayer.prepareAsync();
+//                return true;
+            } catch (IOException e) {
+                Log.e(TAG, "Cannot find audio file: " + path);
+//                return false;
+            }
+        } else {
+            Log.d(TAG, "Reach the end of current playlist.");
+            mMediaPlayer.reset();
+            mPlayingList.resetCur();
+            if (mListener != null) {
+                mListener.playlistOnCompletion();
+            } else {
+                Log.d(TAG, "No Event Listener");
+            }
+        }
+    }
+
     public void next() {
         Log.d(TAG, "next() is called");
         boolean playing = isPlaying();
         mMediaPlayer.reset();
         if (mPlayingList.hasNext()) {
-            currentPosition = mPlayingList.nextIndex();
-            currentFile = mPlayingList.next();
-            String songPath = currentFile.getPath();
+            mCurrentPosition = mPlayingList.nextIndex();
+            mCurrentFile = mPlayingList.next();
+            String songPath = mCurrentFile.getPath();
             try {
                 mMediaPlayer.setDataSource(songPath);
                 Log.d(TAG, "Set data source: " + songPath);
@@ -258,7 +292,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         boolean playing = isPlaying();
         mMediaPlayer.reset();
         if (mPlayingList.hasPrevious()) {
-            currentPosition = mPlayingList.previousIndex();
+            mCurrentPosition = mPlayingList.previousIndex();
             String songPath = mPlayingList.previous().getPath();
             try {
                 mMediaPlayer.setDataSource(songPath);
@@ -287,11 +321,11 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     private boolean prepareNextSong() {
         Log.d(TAG, "prepareNextSong() is called");
         if (mPlayingList.hasNext()) {
-            currentPosition = mPlayingList.nextIndex();
-            currentFile = mPlayingList.next();
-            String songPath = currentFile.getPath();
+            mCurrentPosition = mPlayingList.nextIndex();
+            mCurrentFile = mPlayingList.next();
+            String songPath = mCurrentFile.getPath();
 
-            Log.d(TAG, "current position is " + currentPosition);
+            Log.d(TAG, "current position is " + mCurrentPosition);
             return prepare(songPath);
         } else {
             Log.d(TAG, "Reach the end of playlist");
@@ -304,7 +338,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         Log.d(TAG, "preparePrevSong() is called");
         if (mPlayingList.hasPrevious()) {
             String songPath = mPlayingList.previous().getPath();
-            currentPosition = mPlayingList.previousIndex();
+            mCurrentPosition = mPlayingList.previousIndex();
             return prepare(songPath);
         } else {
             Log.d(TAG, "Reach the end of playlist");
@@ -320,7 +354,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
             //mProgressBar.setProgress(0);
             //mProgressBar.setMax(mMediaPlayer.getDuration());
             //long totalDuration = mMediaPlayer.getDuration();
-            //long currDuration = mMediaPlayer.getCurrentPosition();
+            //long currDuration = mMediaPlayer.getmCurrentPosition();
             //mCurrDuration.setText(MediaPlayerUtils.millSecondsToTime(currDuration));
             //mTotalDuration.setText(MediaPlayerUtils.millSecondsToTime(totalDuration));
             return true;
@@ -333,7 +367,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     private void resetPlaylist() {
         Log.d(TAG, "resetPlaylist() is called");
         mPlayingList.resetCur();
-        currentPosition = -1;
+        mCurrentPosition = -1;
 
 //        if (prepareNextSong()) {
 //            Log.d(LOG_TAG, "move to next song in Playlist");
@@ -343,29 +377,29 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     }
     public String getCurrentArtist() {
         //return currentArtist;
-        return mPlayingList.getMusicFile(currentPosition).getArtist();
+        return mPlayingList.getMusicFile(mCurrentPosition).getArtist();
     }
 
     public String getCurrentTitle() {
         //return currentTitle;
-        return mPlayingList.getMusicFile(currentPosition).getTitle();
+        return mPlayingList.getMusicFile(mCurrentPosition).getTitle();
     }
 
     //private String currentArtist;
     //private String currentTitle;
 
-    private MusicFile currentFile;
+    private MusicFile mCurrentFile;
     //    void updateCurrentFileInfo() {
-//        currentFile = new MusicFile(mPlayingList.getMusicFile(currentPosition));
+//        mCurrentFile = new MusicFile(mPlayingList.getMusicFile(mCurrentPosition));
 //    }
 
-    public int getCurrentPosition() {
-        return currentPosition;
+    public int getmCurrentPosition() {
+        return mCurrentPosition;
     }
 
     public MusicFile getCurrentMusicFile() {
-        if (currentPosition != INVALID_POSITION){
-            return mPlayingList.getMusicFile(currentPosition);
+        if (mCurrentPosition != INVALID_POSITION){
+            return mPlayingList.getMusicFile(mCurrentPosition);
         } else {
             return null;
         }
@@ -386,5 +420,17 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
             }
         }
     }
+
+    private EventListener mListener;
+
+    public interface EventListener {
+        void playlistOnCompletion();
+        void musicFileOnStart(int position);
+    }
+
+    public void setEventListener(Context context) {
+        mListener = (EventListener)context;
+    }
+
 }
 

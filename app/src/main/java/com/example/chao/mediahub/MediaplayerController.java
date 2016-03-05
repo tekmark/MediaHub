@@ -47,11 +47,19 @@ public class MediaplayerController {
         bound = false;
         bindLayout(activity);
     }
+    private MediaplayerController() {
+        bound = false;
+    }
 
     public static MediaplayerController newInstance(Activity activity) {
         MediaplayerController controller = new MediaplayerController(activity);
         return controller;
     }
+
+    public static MediaplayerController newInstance() {
+        return new MediaplayerController();
+    }
+
 
 
     //bind controller's layout to service, and set listeners
@@ -114,6 +122,44 @@ public class MediaplayerController {
 
     public void setInfo(String title, String artist, String duration){
 
+    }
+
+    public void bindLayout(View view) {
+        String found = "";
+        String missing = "";
+        mProgressBar = (SeekBar) view.findViewById(R.id.mediaplayer_controller_seek_bar);
+        if (mProgressBar != null) {
+            found += "Progress Bar, ";
+        } else {
+            missing += "Progress Bar, ";
+        }
+        mCurrDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_current_time);
+        if (mCurrDuration != null) {
+            found += "Label Current_Duration, ";
+        } else {
+            missing += "Label Current_Duration, ";
+        }
+        mTotalDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_total_time);
+        if (mCurrDuration != null) {
+            found += "Label Total_Duration, ";
+        } else {
+            missing += "Label Total_Duration, ";
+        }
+        mTitle = (TextView) view.findViewById(R.id.mediaplayer_controller_label_title);
+        if (mTitle != null) {
+            found += "Label Title, ";
+        } else {
+            missing += "Label Title, ";
+        }
+        mArtist = (TextView) view.findViewById(R.id.mediaplayer_controller_label_artist);
+        if (mArtist != null) {
+            found += "Label Artist, ";
+        } else {
+            missing += "Label Artist, ";
+        }
+
+        Log.d(TAG, "Found: " + found);
+        Log.w(TAG, "Missing: " + missing);
     }
 
     private void bindLayout(Activity activity) {
@@ -219,7 +265,7 @@ public class MediaplayerController {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "SkipToStart Button is clicked");
-                int played_sec = mService.getCurrentPosition() / 1000;
+                int played_sec = mService.getmCurrentPosition() / 1000;
                 if (played_sec < PLAY_PREVIOUS_THRESHOLD_SEC) {
                     mService.previous();
                 } else {
@@ -351,4 +397,5 @@ public class MediaplayerController {
             mHandler.postDelayed(this, updateFreq);
         }
     };
+
 }

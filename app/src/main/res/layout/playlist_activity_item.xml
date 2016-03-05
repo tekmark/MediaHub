@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/playlist_entry_background">
+    <TextView
+        android:id="@+id/playlist_entry_label_position"
+        android:text="1"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_width="32dp"
+        android:layout_height="fill_parent"
+        android:layout_alignBottom="@+id/playlist_music_file_info"/>
+    <include android:id="@id/playlist_music_file_info"
+        layout="@layout/music_file_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/playlist_entry_label_position"
+        android:layout_toEndOf="@id/playlist_entry_label_position"
+        android:layout_toLeftOf="@+id/playlist_entry_button_more"
+        android:layout_toStartOf="@id/playlist_entry_button_more"/>
+    <ImageButton
+        android:id="@id/playlist_entry_button_more"
+        android:contentDescription="More button shows more options"
+        android:background="@color/transparent"
+        android:src="@drawable/more_32"
+        android:layout_width="50sp"
+        android:layout_height="50sp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBottom="@+id/playlist_music_file_info"/>
+</RelativeLayout>
