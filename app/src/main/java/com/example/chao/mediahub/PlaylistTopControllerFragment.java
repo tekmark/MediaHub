@@ -86,7 +86,7 @@ public class PlaylistTopControllerFragment extends Fragment {
     // TODO: Rename method, update argument and hook method into UI event
 //    public void onButtonPressed(Uri uri) {
 //        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
+//            mListener.onEditingDone(uri);
 //        }
 //    }
 
@@ -107,6 +107,12 @@ public class PlaylistTopControllerFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause()");
+        super.onPause();
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -122,6 +128,7 @@ public class PlaylistTopControllerFragment extends Fragment {
         void playAll();
         void onLoop(int state);
         void onShuffle(boolean state);
+        void onEdit();
     }
 
     private void setListeners() {
@@ -163,6 +170,12 @@ public class PlaylistTopControllerFragment extends Fragment {
                     mListener.onLoop(Tags.States.STATE_LOOPING);
                 }
                 //mListener.onLoop();
+            }
+        });
+        mBtnEditList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onEdit();
             }
         });
     }

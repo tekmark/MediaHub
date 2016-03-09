@@ -5,17 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.TimedText;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 
 public class MusicPlaybackService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener,
@@ -54,6 +51,8 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         //set currentPositison to invalid position;
         mCurrentPosition = PlaybackServicePlayingList.PLAYLIST_INVALID_POS;
         mPlayingListState  = PLAYING_LIST_INVALID_STATE;
+
+        mLoopingState = Tags.States.STATE_NOT_LOOPING;
     }
 
     private void initMediaPlayer() {
@@ -177,17 +176,26 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         Log.d(TAG, "Playing List updated. size is : " + list.size());
     }
 
+    public void reorderPlaylist(List<MusicFile> list) {
+        int currentAudioId = mPlayingList.getCurrentMusicFile().getAudioId();
+        mPlayingList.reorder(list, getCurrentMusicFile());
+    }
+
     public List<MusicFile> getMusicFiles() {
         return mPlayingList.getMusicFiles();
+    }
+    public MusicFile getMusicFile(int pos) {
+        //TODO: handle shuffling
+        return mPlayingList.getMusicFile(pos);
     }
 
     public void play() {
         Log.d(TAG, "play() is called");
-        if (mPlayingListState == PLAYING_LIST_INITIALIZED_STATE) {
-            mPlayingListState = PLAYING_LIST_READY_STATE;
-            mMediaPlayer.prepareAsync();
-            return;
-        }
+//        if (mPlayingListState == PLAYING_LIST_INITIALIZED_STATE) {
+//            mPlayingListState = PLAYING_LIST_READY_STATE;
+//            mMediaPlayer.prepareAsync();
+//            return;
+//        }
         mMediaPlayer.start();
     }
 
@@ -248,7 +256,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         if (mPlayingList.hasNext()) {
             mCurrentPosition = mPlayingList.nextIndex();
             mCurrentFile = mPlayingList.next();
-            Log.d(TAG, "Current File: " + mCurrentFile.toString());
+            Log.d(TAG, "Current position : " + mCurrentPosition + ", Current File: " + mCurrentFile.toString());
             String path = mCurrentFile.getPath();
             try {
                 mMediaPlayer.reset();
@@ -285,6 +293,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
                     mMediaPlayer.prepareAsync();
                 }
             } catch (IOException e) {
+                //TODO: exception handling.
                 Log.e(TAG, "Fail to set data source: " + songPath);
             }
         } else {
@@ -400,8 +409,11 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
 //        mCurrentFile = new MusicFile(mPlayingList.getMusicFile(mCurrentPosition));
 //    }
 
-    public int getmCurrentPosition() {
-        return mCurrentPosition;
+//    public int getmCurrentPosition() {
+//        return mCurrentPosition;
+//    }
+    public int getCurrentPosition() {
+        return mPlayingList.getCurrentPosition();
     }
 
     public MusicFile getCurrentMusicFile() {
@@ -433,9 +445,11 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
     public interface EventListener {
         void playlistOnCompletion();
         void musicFileOnStart(int position);
+        void notifyChange();
     }
 
     public void setEventListener(Context context) {
+        Log.d(TAG, "Set New Event Listener. " + context.getClass().getName());
         mListener = (EventListener)context;
     }
 
@@ -445,8 +459,7 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     public void shufflePlaylist(boolean shuffle) {
         mPlayingList.shuffle(shuffle);
-        Log.d(TAG, mPlayingList.getOrdersString());
+        Log.d(TAG, mPlayingList.orderListToString());
     }
 
 }
-

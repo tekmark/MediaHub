@@ -19,7 +19,10 @@ public class Tags {
         public static final String DIALOG_PLAYLIST_OPTIONS = "TagDialogPlaylistOptions";
         public static final String PLAYLIST_TOP_CONTROLLER = "TagPlaylistTopController";
         public static final String PLAYLIST_BOT_INFO_BAR = "TagPlaylistBotInfoBar";
+        public static final String PLAYING_CONTROLLER = "TagPlayingController";
+        public static final String PLAYLIST_EDITING = "TagPlaylistEditing";
     }
+
     public class States {
         public static final int STATE_LOOPING = 0;
         public static final int STATE_LOOPING_ONE = 1;

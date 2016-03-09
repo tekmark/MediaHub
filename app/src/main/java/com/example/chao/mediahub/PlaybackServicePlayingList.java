@@ -1,6 +1,7 @@
 package com.example.chao.mediahub;
 
 import android.text.style.TtsSpan;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +22,9 @@ public class PlaybackServicePlayingList {
     public static final int PLAYLIST_INVALID_POS = -1;
 
     private List<MusicFile> mMusicFiles;
-    //private ListIterator<MusicFile> mIterator;
-//    private String mPlaylistName;
     private List<Integer> mOrderList;
     private ListIterator<Integer> mOrderListIterator;
+
     private int mOrderPos;
 
     //status
@@ -59,6 +59,7 @@ public class PlaybackServicePlayingList {
             mOrderList.add(i);
         }
         mOrderListIterator = mOrderList.listIterator();
+
     }
 
     //factory method.
@@ -74,23 +75,57 @@ public class PlaybackServicePlayingList {
     }
 
     public void update(List<MusicFile> list) {
-//        mMusicFiles = list;
-        //mIterator = mMusicFiles.listIterator();
-//        int size = mMusicFiles.size();
-        //build order list
-//        mOrderList.clear();
-//        for (int i = 0; i != size; ++i) {
-//            mOrderList.add(i);
-//        }
-//        mOrderListIterator = mOrderList.listIterator();
+        //copy.
         mMusicFiles.clear();
         mMusicFiles.addAll(list);
+        //rebuild play order list
         buildPlayOrderList();
     }
 
-    public MusicFile getMusicFile(int index) {
-        return mMusicFiles.get(index);
+    public boolean reorder(List<MusicFile> reorderedList, MusicFile currentFile) {
+        int index = reorderedList.indexOf(currentFile);
+        if (index == -1) {          //current file is not in reordered list.
+            update(reorderedList);
+            return false;
+        } else {
+            update(reorderedList);
+            mOrderPos = mMusicFiles.indexOf(currentFile);
+            index = mOrderList.indexOf(mOrderPos);
+            mOrderListIterator = mOrderList.listIterator(index + 1);
+            Log.d("PlayList Debug", orderListToString() + ", mOrderPos: " + mOrderPos + ", index : " + index);
+            return true;
+        }
     }
+
+    public List<MusicFile> getMusicFilesInPlayOrder() {
+        if (mShuffling) {
+            List<MusicFile> musicFiles = new LinkedList<>();
+            for (int i : mOrderList) {
+                musicFiles.add(mMusicFiles.get(i));
+            }
+            return musicFiles;
+        } else {
+            return mMusicFiles;
+        }
+    }
+
+    public MusicFile getMusicFileInPlayOrder(int index) {
+        if (mShuffling) {
+            int pos = mOrderList.indexOf(index);
+            return mMusicFiles.get(pos);
+        } else {
+            return mMusicFiles.get(index);
+        }
+    }
+
+    public int getCurrentPosition() {
+        return mOrderPos;
+    }
+
+    public MusicFile getCurrentMusicFile() {
+        return mMusicFiles.get(mOrderPos);
+    }
+
 
     public boolean hasNext() {
         if (mOrderListIterator.hasNext()) {
@@ -104,7 +139,8 @@ public class PlaybackServicePlayingList {
     }
 
     public int nextIndex() {
-        return mOrderList.get(mOrderListIterator.nextIndex());
+        int index = mOrderListIterator.nextIndex();
+        return mOrderList.get(index);
     }
 
     public MusicFile next() {
@@ -150,17 +186,20 @@ public class PlaybackServicePlayingList {
     public int size() {
         return mMusicFiles.size();
     }
+
     public List<MusicFile> getMusicFiles() {
         return mMusicFiles;
     }
+    public MusicFile getMusicFile(int index) {
+        return mMusicFiles.get(index);
+    }
 
     public void move(int i) {
-//        mIterator = mMusicFiles.listIterator(i);
         mOrderListIterator = mOrderList.listIterator(i);
+//        mOrderPos = mOrderListIterator.next();
     }
 
     public void resetCur() {
-//        mIterator = mMusicFiles.listIterator();
         mOrderListIterator = mOrderList.listIterator();
     }
 
@@ -175,7 +214,7 @@ public class PlaybackServicePlayingList {
         }
     }
 
-    public String getOrdersString() {
+    public String orderListToString() {
         String list = "";
         for (int i : mOrderList) {
             list += i;

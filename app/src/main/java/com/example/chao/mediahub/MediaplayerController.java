@@ -1,6 +1,5 @@
 package com.example.chao.mediahub;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -8,6 +7,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by chaohan on 10/28/15.
@@ -17,69 +19,62 @@ public class MediaplayerController {
     final static public int DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC = 200;
     final static public int DEFAULT_PROGRESS_BAR_REFRESH_TIMES = 500;
 
-
     final static private String TAG = "MediaPlayerController";
 
-    private ImageButton mPlayPause;
-    private ImageButton mEnd;
-    private ImageButton mSkipToStart;
-    private ImageButton mShuffle;
-    private ImageButton mRepeat;
-
+    //elements
+    private ImageButton mBtnPlayPause;
+    private ImageButton mBtnEnd;
+    private ImageButton mBtnSkipToStart;
+    private ImageButton mBtnShuffle;
+    private ImageButton mBtnLoop;
     private SeekBar mProgressBar;
     private TextView mCurrDuration;
     private TextView mTotalDuration;
-
-    private boolean bound;
-
     private TextView mTitle;
     private TextView mArtist;
 
-    //private boolean isShuffle = false;
-    //private boolean isRepeat = false;
-    //private boolean isRepeatAll = false;
-
+    //music service bound to
     private MusicPlaybackService mService;
+    //music service bound status.
+    private boolean mBoundStatus;
 
-    private Handler mHandler = new Handler();
+    //task handler for sync with service.
+    private Handler mHandler;
 
-    private MediaplayerController(Activity activity) {
-        bound = false;
-        bindLayout(activity);
-    }
     private MediaplayerController() {
-        bound = false;
-    }
-
-    public static MediaplayerController newInstance(Activity activity) {
-        MediaplayerController controller = new MediaplayerController(activity);
-        return controller;
+        mService = null;
+        mBoundStatus = false;
+        mHandler = new Handler();
     }
 
     public static MediaplayerController newInstance() {
         return new MediaplayerController();
     }
 
-
+    public static MediaplayerController newInstance(View view) {
+        MediaplayerController controller = new MediaplayerController();
+        controller.bindLayout(view);
+        return controller;
+    }
 
     //bind controller's layout to service, and set listeners
     public boolean bindService(MusicPlaybackService musicService) {
         if (musicService == null) {
-            bound = false;
-            Log.w(TAG, "Try to bind to a invalid music service");
+            mBoundStatus = false;
+            Log.w(TAG, "Unable to bind to music service. Check if music service exists.");
             return false;
         } else {
             mService = musicService;
-            bound = true;
-            setListeners();
+            mBoundStatus = true;
             Log.d(TAG, "Music service is bound");
-            //syncStatus();
+            setListeners();
+            syncStatus();
             return true;
         }
     }
 
     public boolean isBound() {
-        return bound;
+        return mBoundStatus;
     }
 
     public void enableProgressBar(boolean enable) {
@@ -91,7 +86,7 @@ public class MediaplayerController {
                 Log.d(TAG, "Progress bar is disabled");
             }
         } else {
-            Log.w(TAG, "Progress bar may be missing in layout");
+            Log.w(TAG, "Progress bar is missing in layout");
         }
     }
 
@@ -116,7 +111,7 @@ public class MediaplayerController {
                 Log.d(TAG, "Progress bar is not seekable");
             }
         } else {
-            Log.w(TAG, "Progress bar is not bound or missing in layout");
+            Log.w(TAG, "Progress bar is not mBoundStatus or missing in layout");
         }
     }
 
@@ -124,125 +119,52 @@ public class MediaplayerController {
 
     }
 
-    public void bindLayout(View view) {
-        String found = "";
-        String missing = "";
-        mProgressBar = (SeekBar) view.findViewById(R.id.mediaplayer_controller_seek_bar);
-        if (mProgressBar != null) {
-            found += "Progress Bar, ";
-        } else {
-            missing += "Progress Bar, ";
-        }
-        mCurrDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_current_time);
-        if (mCurrDuration != null) {
-            found += "Label Current_Duration, ";
-        } else {
-            missing += "Label Current_Duration, ";
-        }
-        mTotalDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_total_time);
-        if (mCurrDuration != null) {
-            found += "Label Total_Duration, ";
-        } else {
-            missing += "Label Total_Duration, ";
-        }
-        mTitle = (TextView) view.findViewById(R.id.mediaplayer_controller_label_title);
-        if (mTitle != null) {
-            found += "Label Title, ";
-        } else {
-            missing += "Label Title, ";
-        }
-        mArtist = (TextView) view.findViewById(R.id.mediaplayer_controller_label_artist);
-        if (mArtist != null) {
-            found += "Label Artist, ";
-        } else {
-            missing += "Label Artist, ";
-        }
-
-        Log.d(TAG, "Found: " + found);
-        Log.w(TAG, "Missing: " + missing);
-    }
-
-    private void bindLayout(Activity activity) {
-        mPlayPause = (ImageButton) activity.findViewById(R.id.mediaplayer_controller_button_play_pause);
-        if (mPlayPause != null) {
-            Log.d(TAG, "Button Play/Pause is found");
-        } else {
-            Log.w(TAG, "Button Play/Pause isn't found");
-        }
-        mEnd = (ImageButton) activity.findViewById(R.id.mediaplayer_controller_button_end);
-        if (mEnd != null) {
-            Log.d(TAG, "Button End is found");
-        } else {
-            Log.w(TAG, "Button End isn't found");
-        }
-        mSkipToStart = (ImageButton) activity.findViewById(R.id.mediaplayer_controller_button_skip_to_start);
-        if (mSkipToStart != null) {
-            Log.d(TAG, "Button Skip_to_Start is found");
-        } else {
-            Log.w(TAG, "Button Skip_to_Start isn't found");
-        }
-        //mShuffle = (ImageButton) activity.findViewById(R.id.button_shuffle);
-        //mRepeat = (ImageButton) activity.findViewById(R.id.media_control_repeat);
-        mProgressBar = (SeekBar) activity.findViewById(R.id.mediaplayer_controller_seek_bar);
-        if (mProgressBar != null) {
-            Log.d(TAG, "Progress Bar is found");
-        } else {
-            Log.w(TAG, "Progress Bar isn't found");
-        }
-        mCurrDuration = (TextView) activity.findViewById(R.id.mediaplayer_controller_label_current_time);
-        if (mCurrDuration != null) {
-            Log.d(TAG, "Label Current_Duration is found");
-        } else {
-            Log.w(TAG, "Label Current_Duration End isn't found");
-        }
-        mTotalDuration = (TextView) activity.findViewById(R.id.mediaplayer_controller_label_total_time);
-        if (mCurrDuration != null) {
-            Log.d(TAG, "Label Total_Duration is found");
-        } else {
-            Log.w(TAG, "Label Total_Duration isn't found");
-        }
-        mTitle = (TextView) activity.findViewById(R.id.mediaplayer_controller_label_title);
-        if (mTitle != null) {
-            Log.d(TAG, "Label Title is found");
-        } else {
-            Log.w(TAG, "Label Title isn't found");
-        }
-        mArtist = (TextView) activity.findViewById(R.id.mediaplayer_controller_label_artist);
-        if (mArtist != null) {
-            Log.d(TAG, "Label Artist is found");
-        } else {
-            Log.w(TAG, "Label Artist isn't found");
-        }
-    }
-
     private void setListeners() {
-        if (mPlayPause != null) setPlayPauseButtonListner();
-        if (mEnd != null) setEndButtonListener();
-        if (mSkipToStart != null) setSkipToStartButtonListener();
-        if (mShuffle != null) setShuffleButtonListener();
-        if (mRepeat != null) setRepeatButtonListener();
+        if (mBtnPlayPause != null) setPlayPauseButtonListener();
+        if (mBtnEnd != null) setEndButtonListener();
+        if (mBtnSkipToStart != null) setSkipToStartButtonListener();
+        if (mBtnShuffle != null) setShuffleButtonListener();
+        if (mBtnLoop != null) setRepeatButtonListener();
         if (mProgressBar != null) setSeekBarListener();
     }
 
-    private void setPlayPauseButtonListner() {
-        mPlayPause.setOnClickListener(new View.OnClickListener() {
+    private void syncStatus() {
+//        if (mBtnPlayPause != null) {
+//            if (mService.isPlaying()) {
+//                Log.d(TAG, "Music is playing, Button image: Pause(Ready_to_Pause)");
+//                mBtnPlayPause.setSelected(true);
+//            } else {
+//                Log.d(TAG, "Music is not playing, Button image: Play(Ready_to_Play)");
+//                mBtnPlayPause.setSelected(false);
+//            }
+//        }
+        if (mBtnPlayPause != null) {
+            mBtnPlayPause.setSelected(mService.isPlaying());
+        }
+        if (mBtnShuffle != null) {
+            mBtnShuffle.setSelected(mService.isShuffling());
+        }
+    }
+
+    private void setPlayPauseButtonListener() {
+        mBtnPlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "PlayPause Button is clicked");
-                if (mPlayPause.isSelected() && mService.isPlaying()) { //if image is pause (playing)
-                    mPlayPause.setSelected(false);      //change image from pause to play
+                if (mBtnPlayPause.isSelected() && mService.isPlaying()) { //if image is pause (playing)
+                    mBtnPlayPause.setSelected(false);      //change image from pause to play
                     mService.pause();                   //pause
                     Log.d(TAG, "Button image: Pause(Ready_To_Pause) -> Play(Ready_to_Play)");
-                } else if (!mPlayPause.isSelected() && !mService.isPlaying()) { //if paused
+                } else if (!mBtnPlayPause.isSelected() && !mService.isPlaying()) { //if paused
                     //NOTE: isPlaying() == false doesn't mean that MusicService is paused. MediaPlayer
                     //maybe not prepared. One situation is that next() is called, since currently is
                     //not playing, but asynPrepare() is not called.
-                    mPlayPause.setSelected(true);
+                    mBtnPlayPause.setSelected(true);
                     mService.play();
                     //mService.resume();
                     Log.d(TAG, "Button image: Play(Ready_to_Play) -> Pause(Ready_to_Pause)");
                 } else {    //handle error here
-                    mPlayPause.setSelected(mService.isPlaying());
+                    mBtnPlayPause.setSelected(mService.isPlaying());
                     Log.e(TAG, "PlayPause ButtonImageERROR, image has been hanged");
                 }
             }
@@ -250,7 +172,7 @@ public class MediaplayerController {
     }
 
     private void setEndButtonListener() {
-        mEnd.setOnClickListener(new View.OnClickListener() {
+        mBtnEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "End Button is clicked");
@@ -261,11 +183,11 @@ public class MediaplayerController {
     }
 
     private void setSkipToStartButtonListener() {
-        mSkipToStart.setOnClickListener(new View.OnClickListener() {
+        mBtnSkipToStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "SkipToStart Button is clicked");
-                int played_sec = mService.getmCurrentPosition() / 1000;
+                int played_sec = mService.getCurrentPosition() / 1000;
                 if (played_sec < PLAY_PREVIOUS_THRESHOLD_SEC) {
                     mService.previous();
                 } else {
@@ -278,14 +200,17 @@ public class MediaplayerController {
     }
 
     private void setShuffleButtonListener() {
-        mShuffle.setOnClickListener(new View.OnClickListener() {
+        mBtnShuffle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Shuffle button is clicked");
-                if (mShuffle.isSelected()) {  //playing,
-                    mShuffle.setSelected(false);
+                if (mBtnShuffle.isSelected()) {  //playing,
+                    Log.d(TAG, "shuffle -> not shuffle");
+                    mBtnShuffle.setSelected(false);
+                    mService.shufflePlaylist(false);
                 } else {
-                    mShuffle.setSelected(true);
+                    Log.d(TAG, "not shuffle -> shuffle");
+                    mBtnShuffle.setSelected(true);
+                    mService.shufflePlaylist(true);
 
                 }
             }
@@ -294,23 +219,23 @@ public class MediaplayerController {
 
     private void setRepeatButtonListener() {
         //TODO: add repeat current one;
-        mRepeat.setOnClickListener(new View.OnClickListener() {
+        mBtnLoop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Repeat button is clicked");
-//                if (mRepeat.isSelected() && isRepeatAll && currPlaylist.isRepeat()) {
-//                    mRepeat.setSelected(false);
+//                if (mBtnLoop.isSelected() && isRepeatAll && currPlaylist.isRepeat()) {
+//                    mBtnLoop.setSelected(false);
 //                    isRepeatAll = false;
 //                    currPlaylist.resetRepeat();
 //                    Log.d("MediaPlayer", "disable repeat playlist when finished");
-//                } else if (!mRepeat.isSelected() && !isRepeatAll && !currPlaylist.isRepeat()){
-//                    mRepeat.setSelected(true);
+//                } else if (!mBtnLoop.isSelected() && !isRepeatAll && !currPlaylist.isRepeat()){
+//                    mBtnLoop.setSelected(true);
 //                    isRepeatAll = true;
 //                    currPlaylist.setRepeat();
 //                    Log.d("MediaPlayer", "enable repeat playlist when finished");
 //                } else {
 //                    Log.e("MediaPlayer", "Repeat statues conflicts, reset to false");
-//                    mRepeat.setSelected(false);
+//                    mBtnLoop.setSelected(false);
 //                    isRepeatAll = false;
 //                    currPlaylist.resetRepeat();
 //                }
@@ -335,7 +260,7 @@ public class MediaplayerController {
                 mHandler.removeCallbacks(mUpdateTimeTask);
                 //long totalDuration = mService.getTotalDuration();
                 mService.seekTo(seekBar.getProgress());
-                updateProgressBar();
+                updateProgressBarStart();
             }
         });
     }
@@ -353,33 +278,35 @@ public class MediaplayerController {
     }
 
     public void sync() {
-        Log.d(TAG, "sync() is called");
-        if (bound && mService != null) {
+        if (mBoundStatus && mService != null) {
             MusicFile file = mService.getCurrentMusicFile();
+            Log.d(TAG, "sync()");
             if (file != null) {
                 //sync title and artist
                 setTitle(file.getTitle());
                 setArtist(file.getArtist());
                 //sync play_pause button
-                if (mPlayPause != null) {
-                        mPlayPause.setSelected(mService.isPlaying());
-                }
+                syncStatus();
                 //sync progress bar
                 if (mTotalDuration != null && mCurrDuration != null && mProgressBar != null) {
-                    updateProgressBar();
+                    updateProgressBarStart();
                 }
             }
         } else {
-             Log.w(TAG, "Sync failed. Cannot sync unbound controller");
+             Log.e(TAG, "Sync failed. Cannot sync unbound controller");
         }
     }
 
-    public void updateProgressBar() {
+    public void updateProgressBarStart() {
         long total = mService.getTotalDuration();
         mProgressBar.setMax((int) total);
         mTotalDuration.setText(Utils.millSecondsToTime(total));
         mHandler.removeCallbacks(mUpdateTimeTask);
         mHandler.postDelayed(mUpdateTimeTask, DEFAULT_PROGRESS_BAR_REFRESH_PERIOD_MSEC);
+    }
+
+    public void stopSync() {
+        mHandler.removeCallbacks(mUpdateTimeTask);
     }
 
     private Runnable mUpdateTimeTask = new Runnable() {
@@ -398,4 +325,70 @@ public class MediaplayerController {
         }
     };
 
+    private void bindLayout(View view) {
+        mProgressBar = (SeekBar) view.findViewById(R.id.mediaplayer_controller_seek_bar);
+        mCurrDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_current_time);
+        mTotalDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_total_time);
+        mTitle = (TextView) view.findViewById(R.id.mediaplayer_controller_label_title);
+        mArtist = (TextView) view.findViewById(R.id.mediaplayer_controller_label_artist);
+        mBtnPlayPause = (ImageButton) view.findViewById(R.id.mediaplayer_controller_button_play_pause);
+        mBtnEnd = (ImageButton) view.findViewById(R.id.mediaplayer_controller_button_end);
+        mBtnSkipToStart = (ImageButton) view.findViewById(R.id.mediaplayer_controller_button_skip_to_start);
+        mBtnShuffle = (ImageButton) view.findViewById(R.id.mediaplayer_controller_button_shuffle);
+        //mBtnLoop = (ImageButton) activity.findViewById(R.id.media_control_repeat);
+        printElements();
+    }
+
+    /**
+     * for debugging. print found elements and missing elements.
+     */
+    private void printElements() {
+        List<String> found = new LinkedList<>();
+        List<String> missing = new LinkedList<>();
+
+        String element = "Progress Bar";
+        if (mProgressBar != null) found.add(element);
+        else missing.add(element);
+
+        element = "Label Current_Duration";
+        if (mCurrDuration != null) found.add(element);
+        else missing.add(element);
+
+        element = "Label Total_Duration";
+        if (mCurrDuration != null) found.add(element);
+        else missing.add(element);
+
+        element = "Label Title";
+        if (mTitle != null) found.add(element);
+        else missing.add(element);
+
+        element = "Label Artist";
+        if (mArtist != null) found.add(element);
+        else missing.add(element);
+
+        element = "Button Play/Pause";
+        if (mBtnPlayPause != null) found.add(element);
+        else missing.add(element);
+
+        element = "Button End";
+        if (mBtnEnd != null) found.add(element);
+        else missing.add(element);
+
+        element = "Button Skip";
+        if (mBtnSkipToStart != null) found.add(element);
+        else missing.add(element);
+
+        String str = "";
+        for (String s : found) {
+            str += s;
+            str += ", ";
+        }
+        Log.d(TAG, "Found: " + str);
+        str = "";
+        for(String s : missing) {
+            str += s;
+            str += ", ";
+        }
+        Log.w(TAG, "Missing: " + str);
+    }
 }

@@ -8,21 +8,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link PlaylistBotInfoFragment.OnFragmentInteractionListener} interface
+ * {@link PlayingFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link PlaylistBotInfoFragment#newInstance} factory method to
+ * Use the {@link PlayingFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PlaylistBotInfoFragment extends Fragment {
-    private static final String TAG = "PlaylistBotInfoFrag";
-
+public class PlayingFragment extends Fragment {
+    private static final String TAG = "PlayingFragment";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -34,35 +32,31 @@ public class PlaylistBotInfoFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-//    private TextView mTitle;
-//    private TextView mArtist;
-//    private SeekBar mProgressBar;
-//    private TextView mCurrDuration;
-//    private TextView mTotalDuration;
-//
-//    private boolean bound;
-    MediaplayerController mController;
-
-
-    public PlaylistBotInfoFragment() {
+    public PlayingFragment() {
         // Required empty public constructor
     }
-
+    private MusicFile mFile;
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment PlaylistBotInfoFragment.
+     * @return A new instance of fragment PlayingFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static PlaylistBotInfoFragment newInstance(String param1, String param2) {
-        PlaylistBotInfoFragment fragment = new PlaylistBotInfoFragment();
+    public static PlayingFragment newInstance(String param1, String param2) {
+        PlayingFragment fragment = new PlayingFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static PlayingFragment newInstance(MusicFile file) {
+        PlayingFragment fragment = new PlayingFragment();
+        fragment.mFile = file;
         return fragment;
     }
 
@@ -78,21 +72,12 @@ public class PlaylistBotInfoFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_playlist_bot_info, container, false);
-        mController = MediaplayerController.newInstance(rootView);
-        //mController.bindLayout(rootView);
-        //TODO disable seekable
-        mController.enableSeek(true);
+        Log.d(TAG, "OnCreateView, mFile : " + mFile.toString());
+        View rootView = inflater.inflate(R.layout.fragment_playing, container, false);
+        TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+        textView.setText(mFile.toString());
         return rootView;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
     }
 
     @Override
@@ -108,7 +93,6 @@ public class PlaylistBotInfoFragment extends Fragment {
 
     @Override
     public void onDetach() {
-        Log.d(TAG, "onDetach()");
         super.onDetach();
         mListener = null;
     }
@@ -127,19 +111,4 @@ public class PlaylistBotInfoFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
-    public boolean bindService(MusicPlaybackService service) {
-        Log.d(TAG, "Bound Music Service");
-        return mController.bindService(service);
-    }
-
-    public void startSyncMusicService() {
-        Log.d(TAG, "Start to sync Music Service");
-        mController.sync();
-    }
-
-    public void stopSyncMusicService() {
-
-    }
-
 }
