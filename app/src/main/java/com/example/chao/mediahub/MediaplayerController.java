@@ -326,6 +326,7 @@ public class MediaplayerController {
     };
 
     private void bindLayout(View view) {
+        Log.d(TAG, "bind Layout");
         mProgressBar = (SeekBar) view.findViewById(R.id.mediaplayer_controller_seek_bar);
         mCurrDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_current_time);
         mTotalDuration = (TextView) view.findViewById(R.id.mediaplayer_controller_label_total_time);

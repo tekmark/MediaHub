@@ -209,6 +209,25 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         prepareNext();
     }
 
+    public void prepareFirstMusicFile() {
+        mMediaPlayer.reset();
+        mPlayingList.resetCur();
+        if (mPlayingList.hasNext()) {
+            mCurrentPosition = mPlayingList.nextIndex();
+            mCurrentFile = mPlayingList.next();
+            Log.d(TAG, "Current position : " + mCurrentPosition + ", Current File: " + mCurrentFile.toString());
+            String path = mCurrentFile.getPath();
+            try {
+                mMediaPlayer.reset();
+                mMediaPlayer.setDataSource(path);
+                mMediaPlayer.prepare();
+            } catch (IOException e) {
+                //TODO: error handling
+                Log.e(TAG, "Cannot find audio file: " + path);
+            }
+        }
+    }
+
 //    private void informActivity(String action, String msg) {
 //        Intent intent = new Intent("my-event");
 //        intent.putExtra("message", mCurrentPosition);

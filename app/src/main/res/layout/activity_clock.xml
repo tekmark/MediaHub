@@ -1,8 +1,13 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:background="@color/black"
     tools:context="com.example.chao.mediahub.ClockActivity">
 
+    <!--<include android:id="@+id/fragment_clock_mediaplayer_controller"-->
+        <!--layout="@layout/fragment_clock_mediaplayer_controller"/>-->
+    <FrameLayout android:id="@+id/clock_mediaplayer_controller_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
     <TextView android:id="@+id/fullscreen_content" android:layout_width="match_parent"
         android:layout_height="match_parent" android:keepScreenOn="true" android:textColor="#33b5e5"
         android:textStyle="bold" android:textSize="50sp" android:gravity="center"
@@ -10,6 +15,7 @@
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
+
     <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
@@ -25,4 +31,5 @@
 
         </LinearLayout>
     </FrameLayout>
-</FrameLayout>
+
+</RelativeLayout>

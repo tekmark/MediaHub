@@ -299,6 +299,5 @@ public class PlaylistEditingDialog extends DialogFragment {
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
             mAdapter.onItemDismiss(viewHolder.getAdapterPosition());
         }
-
     }
 }
