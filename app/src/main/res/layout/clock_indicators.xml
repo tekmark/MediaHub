@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="match_parent">
+    <LinearLayout android:id="@+id/clock_indicator_am_pm"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/clock_other_indicators"
+        android:layout_alignEnd="@id/clock_other_indicators">
+        <TextView
+            android:id="@+id/clock_indicator_am"
+            android:text="AM"
+            android:gravity="end"
+            android:textColor="@color/lime_green"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <TextView
+            android:id="@+id/clock_indicator_pm"
+            android:text="PM"
+            android:gravity="end"
+            android:textColor="@color/lime_green"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+    <RelativeLayout android:id="@id/clock_other_indicators"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/clock_indicator_am_pm">
+        <TextView
+            android:id="@+id/clock_indicator_alarm"
+            android:text="ALARM"
+            android:textColor="@color/lime_green"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+</RelativeLayout>

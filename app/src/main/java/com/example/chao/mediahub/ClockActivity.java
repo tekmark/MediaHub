@@ -54,6 +54,7 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
     private boolean mBound;
 
     private ClockMediaplayerControllerFragment mControllerFrag;
+    private ClockFragment mClock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +68,7 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
+        //mContentView = findViewById(R.id.fullscreen_content);
 
 
         // Set up the user interaction to manually show or hide the system UI.
@@ -95,7 +96,14 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
         } else {
             Log.d(TAG, "controller found");
         }
-
+        mClock = (ClockFragment)fm.findFragmentByTag("TagClockFragment");
+        if (mClock == null) {
+            Log.d(TAG, "No Clock Frag");
+            mClock = ClockFragment.newInstance("", "");
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.add(R.id.fragment_clock, mClock, "TagClockFragment");
+            ft.commit();
+        }
     }
 
     @Override
@@ -182,12 +190,12 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
             // Note that some of these constants are new as of API 16 (Jelly Bean)
             // and API 19 (KitKat). It is safe to use them, as they are inlined
             // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+//            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+//                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+//                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     };
 
