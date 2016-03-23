@@ -73,6 +73,14 @@ public class MediaplayerController {
         }
     }
 
+    public int getPlaybackServicePlaylistId() {
+        if (mBoundStatus && mService != null) {
+            return mService.getCurrentPlaylistId();
+        } else {
+            return Playlist.INVALID_PLAYLIST_ID;
+        }
+    }
+
     public boolean isBound() {
         return mBoundStatus;
     }

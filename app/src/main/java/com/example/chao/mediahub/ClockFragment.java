@@ -40,16 +40,19 @@ public class ClockFragment extends Fragment {
     public ClockFragment() {
         // Required empty public constructor
     }
-
+    //clock
     private TextView mLeft;
     private TextView mRight;
     private TextView mSeparator;
-
+    //indicators
     private TextView mAM;
     private TextView mPM;
     private TextView mAlarm;
 
+    //24 hour or not
     private boolean m24Hour;
+    //using system time or not
+    private boolean mSystemTime;
 
     private Handler mHandler = new Handler();
     private Calendar mCalendar;
@@ -108,6 +111,7 @@ public class ClockFragment extends Fragment {
         mRight = (TextView) rootView.findViewById(R.id.clock_right_part);
         mSeparator = (TextView) rootView.findViewById(R.id.clock_separator);
 
+        //TODO: get font type from shared preference.
         Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "fonts/LiquidCrystal/LiquidCrystal-Bold.otf");
         //Typeface tf = Typeface.createFromAsset(this.getAssets(), "fonts/BlackBall/Black Ball.ttf");
         mLeft.setTypeface(tf);
@@ -152,6 +156,7 @@ public class ClockFragment extends Fragment {
         super.onDetach();
         mListener = null;
         mHandler.removeCallbacks(updateClockThread);
+        Log.d(TAG, "OnDetach()");
     }
 
     /**

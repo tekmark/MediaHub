@@ -40,6 +40,8 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
 
     private int mLoopingState;
 
+    private int mCurrentPlaylistId;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -53,6 +55,8 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mPlayingListState  = PLAYING_LIST_INVALID_STATE;
 
         mLoopingState = Tags.States.STATE_NOT_LOOPING;
+
+        mCurrentPlaylistId = Playlist.INVALID_PLAYLIST_ID;
     }
 
     private void initMediaPlayer() {
@@ -111,6 +115,11 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mPlayingList.resetCur();
         return true;
     }
+
+    public int getCurrentPlaylistId() {
+        return mCurrentPlaylistId;
+    }
+
 
     //TODO: link to it.
     @Override
@@ -174,6 +183,11 @@ public class MusicPlaybackService extends Service implements MediaPlayer.OnPrepa
         mPlayingList.update(list);
         mPlayingListState = PLAYING_LIST_INITIALIZED_STATE;
         Log.d(TAG, "Playing List updated. size is : " + list.size());
+    }
+
+    public void updatePlayingList(List<MusicFile> list, int playlistId) {
+        updatePlayingList(list);
+        mCurrentPlaylistId = playlistId;
     }
 
     public void reorderPlaylist(List<MusicFile> list) {

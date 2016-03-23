@@ -70,7 +70,6 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         //mContentView = findViewById(R.id.fullscreen_content);
 
-
         // Set up the user interaction to manually show or hide the system UI.
 
 //        mContentView.setOnClickListener(new View.OnClickListener() {
@@ -85,7 +84,9 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
         FragmentManager fm = getSupportFragmentManager();
+        //add controller fragment to activity
         mControllerFrag = (ClockMediaplayerControllerFragment)fm.findFragmentByTag("Controller");
         if (mControllerFrag == null) {
             Log.d(TAG, "No controller found");
@@ -251,8 +252,7 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
 
             mControllerFrag.bindService(mPlaybackService);
             mControllerFrag.syncMusicServiceStart();
-//            mControllerFragment.bindService(mPlaybackService);
-//            mControllerFragment.syncMusicServiceStart();
+
             Log.d(TAG, "MusicPlaybackService connected");
         }
 
@@ -267,7 +267,7 @@ public class ClockActivity extends AppCompatActivity implements ClockChoosePlayl
     public void onPlaylistChange(int playlistId) {
         Log.d(TAG, "OnPlaylistChange()");
         List<MusicFile> musicFiles = MediaManager.getPlaylistMusicFiles(this, playlistId);
-        mPlaybackService.updatePlayingList(musicFiles);
+        mPlaybackService.updatePlayingList(musicFiles, playlistId);
         mPlaybackService.playPlaylistFrom(0);
         mControllerFrag.syncMusicServiceStart();
         hide();

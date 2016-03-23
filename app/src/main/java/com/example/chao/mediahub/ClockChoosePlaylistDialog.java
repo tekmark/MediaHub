@@ -3,7 +3,6 @@ package com.example.chao.mediahub;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -28,12 +27,10 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
 
     private static int NO_ITEM_CHECKED = -1;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
+    private static final String ARG_PLAYLIST_ID = "param1";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
+    private int mPlaylistId;
     private String mParam2;
 
     private List<Playlist> mPlaylists;
@@ -44,23 +41,20 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
 
     public ClockChoosePlaylistDialog() {
         // Required empty public constructor
-        mCheckedPosition = -1;
+        mCheckedPosition = NO_ITEM_CHECKED;
     }
 
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param playlistId Parameter 1.
      * @return A new instance of fragment ClockChoosePlaylistDialog.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ClockChoosePlaylistDialog newInstance(String param1, String param2) {
+    public static ClockChoosePlaylistDialog newInstance(int playlistId) {
         ClockChoosePlaylistDialog fragment = new ClockChoosePlaylistDialog();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(ARG_PLAYLIST_ID, playlistId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -69,8 +63,7 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mPlaylistId = getArguments().getInt(ARG_PLAYLIST_ID);
         }
     }
 
@@ -86,9 +79,12 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
         int i = 0;
         for (Playlist playlist : mPlaylists) {
             playlistNames[i] = playlist.getName();
+            if (playlist.getId() == mPlaylistId) {
+                mCheckedPosition = i;
+            }
             ++i;
         }
-        builder.setSingleChoiceItems(playlistNames, -1, new DialogInterface.OnClickListener() {
+        builder.setSingleChoiceItems(playlistNames, mCheckedPosition, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which){
                 Log.d(TAG, "onClick(): " + which);
                 mCheckedPosition = which;
@@ -116,22 +112,13 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
         return builder.create();
     }
 
-
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                             Bundle savedInstanceState) {
-         //Inflate the layout for this fragment
-//        return inflater.inflate(R.layout.fragment_clock_choose_playlist_dialog, container, false);
-//    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnPlaylistChange) {
             mListener = (OnPlaylistChange) context;
         } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnPlaylistChange");
+            throw new RuntimeException(context.toString() + " must implement OnPlaylistChange");
         }
     }
 
@@ -142,7 +129,6 @@ public class ClockChoosePlaylistDialog extends DialogFragment {
     }
 
     public interface OnPlaylistChange {
-        // TODO: Update argument type and name
         void onPlaylistChange(int playlistId);
     }
 }

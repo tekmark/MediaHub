@@ -73,32 +73,35 @@ public class ClockMediaplayerControllerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView()");
+
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.clock_mediaplayer_bar_controller, container, false);
         mController = MediaplayerController.newInstance(rootView);
 
         mBtnChoosePlaylist = (ImageButton)rootView.findViewById(R.id.meidaplayer_button_choose_playlist);
+
         mBtnChoosePlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "Choose Playlist onClick()");
-                ClockChoosePlaylistDialog dialog = ClockChoosePlaylistDialog.newInstance("", "");
+                int playlistId = mController.getPlaybackServicePlaylistId();
+                Log.d(TAG, "Choose Playlist onClick(), Playlist Id: " + playlistId);
+                ClockChoosePlaylistDialog dialog = ClockChoosePlaylistDialog.newInstance(playlistId);
                 dialog.show(getActivity().getSupportFragmentManager(), "Choose Playlist");
-
             }
         });
-
         return rootView;
     }
 
     public void bindService(MusicPlaybackService service) {
-        mController.bindService(service);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+        if (mController.bindService(service)) {         //success
+            MusicFile currentMusicFile = service.getCurrentMusicFile();      //get current file
+            if (currentMusicFile != null) {
+                Log.d(TAG, "Current File: " + currentMusicFile.toString());
+            } else {
+                Log.d(TAG, "No Current File");
+            }
+        } else {
+            Log.d(TAG, "Failed to bind service");
         }
     }
 

@@ -30,7 +30,6 @@ public class PlaybackServicePlayingList {
     private boolean mLooping;
     private boolean mShuffling;
 
-
     private PlaybackServicePlayingList() {
         mMusicFiles = new ArrayList<>();
         mOrderList = new LinkedList<>();

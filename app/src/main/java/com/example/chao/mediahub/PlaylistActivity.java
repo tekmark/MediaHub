@@ -218,7 +218,7 @@ public class PlaylistActivity extends AppCompatActivity implements PlaylistFragm
     private void syncPlaybackServicePlayingList() {
         //sync playlist
         List<MusicFile> list = mPlaylistFragment.getPlaylist();
-        mPlaybackService.updatePlayingList(list);
+        mPlaybackService.updatePlayingList(list, mPlaylistId);
     }
 
     private void hideInfoBar() {
