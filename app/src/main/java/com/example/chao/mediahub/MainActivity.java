@@ -1,8 +1,13 @@
 package com.example.chao.mediahub;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,6 +27,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements PlaylistsTabFragment.OnInteractionListener,
+        ActivityCompat.OnRequestPermissionsResultCallback,
         PlaylistOptionsDialog.OnInteractionListener,
         LibraryTabFragment.OnInteractionListener,
         MusicFileOptionsDialog.OnInteractionListener,
@@ -104,6 +110,20 @@ public class MainActivity extends AppCompatActivity
 
         mViewPager.setCurrentItem(current_tab_position);
 
+        //check permission here
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            //explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Log.d(TAG, "explanation");
+            } else {
+                //no explanation needed.
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        PermissionRequestCode.READ_EXTERNAL_STORAGE);
+            }
+        }
+
         MediaManager.scan(getApplicationContext(), null);
         //MediaManager.getAllMusicFiles(getApplicationContext());
     }
@@ -185,6 +205,22 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "Clock");
         Intent intent = new Intent(this, ClockActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case PermissionRequestCode.READ_EXTERNAL_STORAGE : {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permission was granted. do read_external_storage job
+                } else {
+                    //permission was denied. disable the functions
+                }
+                return;
+            }
+
+            //other cases:
+        }
     }
 
     @Override

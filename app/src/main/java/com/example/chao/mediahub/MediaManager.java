@@ -1,14 +1,19 @@
 package com.example.chao.mediahub;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import java.io.File;
@@ -65,6 +70,8 @@ public class MediaManager {
         ContentResolver musicResolver = context.getContentResolver();
         Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Log.d(TAG, "Scan all Music Files in MediaStore. Uri: " + musicUri.toString());
+
+
         //TODO: set projection[]
         String proj[] = {};
         Cursor cursor = musicResolver.query(musicUri, null, null, null, null);
